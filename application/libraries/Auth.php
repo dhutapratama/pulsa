@@ -18,7 +18,7 @@ class Auth {
 		return true;
 	}
 
-	private function _add_login_session($member_id, $saldo_id, $device_id) {
+	private function add_login_session($member_id, $saldo_id, $device_id) {
 		$CI =& get_instance();
         $CI->load->model('login_sessions');
 		$login_key = md5(time().rand(1000, 9999));
