@@ -30,5 +30,7 @@ class Auth {
 			$CI->write->error('There some missing input');
 			exit();
 		}
+
+		return $post_data;
 	}
 }
