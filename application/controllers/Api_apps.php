@@ -34,19 +34,19 @@ class Api_apps extends CI_Controller {
 			$this->saldo->insert($saldo);
 			$saldo_id = $this->db->insert_id();
 
-			$this->_add_login_session($member_id, $saldo_id);
+			$this->_add_login_session($member_id, $saldo_id, $input['device_id']));
 		}
 		$saldo_data = $this->saldo->get_by_member_id($member_data->member_id);
-		$this->_add_login_session($member_data->member_id, $saldo_data->saldo_id);
+		$this->_add_login_session($member_data->member_id, $saldo_data->saldo_id, $input['device_id']);
 	}
 
-	private function _add_login_session($member_id, $saldo_id) {
+	private function _add_login_session($member_id, $saldo_id, $device_id) {
 		$login_key = md5(time().rand(1000, 9999));
 		$login_session['login_key']	= $login_key;
 		$login_session['date']		= date('Y-m-d H:i:s');
 		$login_session['member_id']	= $member_id;
 		$login_session['saldo_id']	= $saldo_id;
-		$login_session['device_id']	= $input['device_id'];
+		$login_session['device_id']	= $device_id;
 		$this->login_sessions->insert($login_session);
 
 		$feedback['error'] = false;
