@@ -11,9 +11,9 @@ class Auth {
 		$CI =& get_instance();
         $CI->load->model('login_sessions');
         
-		$login_data = $this->login_sessions->get_by_login_key($CI->input->post('login_key'));
+		$login_data = $CI->login_sessions->get_by_login_key($CI->input->post('login_key'));
 		if (!$login_data) {
-			$this->write->error('Your session was expired');	
+			$CI->write->error('Your session was expired');	
 		}
 		return $login_data;
 	}
