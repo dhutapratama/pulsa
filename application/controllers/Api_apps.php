@@ -36,7 +36,8 @@ class Api_apps extends CI_Controller {
 
 			$this->_add_login_session($member_id, $saldo_id);
 		}
-		$this->_add_login_session($member_data->member_id, $member_data->saldo_id);
+		$saldo_data = $this->saldo->get_by_member_id($member_data->member_id);
+		$this->_add_login_session($member_data->member_id, $saldo_data->saldo_id);
 	}
 
 	private function _add_login_session($member_id, $saldo_id) {
