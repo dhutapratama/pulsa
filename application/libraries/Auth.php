@@ -18,6 +18,22 @@ class Auth {
 		return true;
 	}
 
+	private function _add_login_session($member_id, $saldo_id, $device_id) {
+		$CI =& get_instance();
+        $CI->load->model('login_sessions');
+		$login_key = md5(time().rand(1000, 9999));
+		$login_session['login_key']	= $login_key;
+		$login_session['date']		= date('Y-m-d H:i:s');
+		$login_session['member_id']	= $member_id;
+		$login_session['saldo_id']	= $saldo_id;
+		$login_session['device_id']	= $device_id;
+		$CI->login_sessions->insert($login_session);
+
+		$feedback['error'] = false;
+		$feedback['data']['login_key'] = $login_key;
+		$CI->write->feedback($feedback);
+	}
+
 	function input($input = array()) {
 		$CI =& get_instance();
 
