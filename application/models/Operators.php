@@ -3,6 +3,7 @@
 /*
 $operator['operator_id']
 $operator['nama']
+$operator['prefix_number']
 */
 
 class Operators extends CI_Model {
