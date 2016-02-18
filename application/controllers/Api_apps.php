@@ -9,16 +9,10 @@ class Api_apps extends CI_Controller {
         if ($_SERVER['REQUEST_METHOD'] != "POST") {
         	redirect();
         }
-     }
-
-	public function index() {
-
-
-		$this->write->feedback($feedback);
-	}
+    }
 
 	public function get_login_key() {
-		$this->load->model(array('members'));
+		$this->load->model(array('members', 'saldo'));
 
 		$input = array('device_id' => 'required');
 
