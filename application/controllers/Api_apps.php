@@ -54,17 +54,22 @@ class Api_apps extends CI_Controller {
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
 
-		$i = 0;
-		$transactions = array();
-		foreach ($transaction_data as $value) {
-			$transaction_type_data = $this->transaction_types->get_by_id($value->transaction_type_id);
-			$transactions[$i]['type']		= $transaction_type_data->transaction_name;
-			$transactions[$i]['date']		= date('d M Y H:i', strtotime($value->date));
-			$transactions[$i]['status']		= $value->status;
-			$transactions[$i]['amount']		= "Rp ".number_format($value->amount, 0, '', '.');
-			$transactions[$i]['balance']	= "Rp ".number_format($value->balance, 0, '', '.');
-			$i++;
+		if ($transaction_data) {
+			$i = 0;
+			$transactions = array();
+			foreach ($transaction_data as $value) {
+				$transaction_type_data = $this->transaction_types->get_by_id($value->transaction_type_id);
+				$transactions[$i]['type']		= $transaction_type_data->transaction_name;
+				$transactions[$i]['date']		= date('d M Y H:i', strtotime($value->date));
+				$transactions[$i]['status']		= $value->status;
+				$transactions[$i]['amount']		= "Rp ".number_format($value->amount, 0, '', '.');
+				$transactions[$i]['balance']	= "Rp ".number_format($value->balance, 0, '', '.');
+				$i++;
+			}
+		} else {
+			$transactions = false;
 		}
+
 		$feedback['error'] 					= false;
 		$feedback['data']['saldo']			= "Rp ".number_format($saldo_data->amount, 0, '', '.');
 		$feedback['data']['transactions'] 	= $transactions;
