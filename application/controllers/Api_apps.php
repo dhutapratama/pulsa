@@ -49,6 +49,25 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function get_main_data() {
-		$this->auth->login_key();
+		$login_data			= $this->auth->login_key();
+		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
+		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
+
+		$i = 0;
+		$transactions = array();
+		foreach ($transaction_data as $value) {
+			$transaction_type_data = $this->transaction_types->get_by_id($value->transaction_type_id);
+			$transactions[$i]['type']		= $transaction_type_data->transaction_name;
+			$transactions[$i]['date']		= date('d M Y H:i', strtotime($value->date));
+			$transactions[$i]['status']		= $value->status;
+			$transactions[$i]['amount']		= "Rp".number_format($value->amount, 0, '', '.');
+			$transactions[$i]['balance']	= "Rp".number_format($value->balance, 0, '', '.');
+			$i++;
+		}
+		$feedback['error'] 					= false;
+		$feedback['data']['saldo']			= $saldo_data->amount;
+		$feedback['data']['transactions'] 	= $transactions;
+
+		$this->write->feedback($feedback);
 	}
 }

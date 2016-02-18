@@ -15,7 +15,7 @@ class Auth {
 		if (!$login_data) {
 			$this->write->error('Your session was expired');	
 		}
-		return true;
+		return $login_data;
 	}
 
 	function add_login_session($member_id, $saldo_id, $device_id) {
