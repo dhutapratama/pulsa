@@ -59,7 +59,6 @@ class Api_apps extends CI_Controller {
 			$transactions = array();
 			foreach ($transaction_data as $value) {
 				$transaction_type_data = $this->transaction_types->get_by_id($value->transaction_type_id);
-				echo var_dump($transaction_type_data);
 				$transactions[$i]['type']		= $transaction_type_data->transaction_name;
 				$transactions[$i]['date']		= date('d M Y H:i', strtotime($value->date));
 				$transactions[$i]['status']		= $value->status;
