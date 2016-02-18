@@ -72,6 +72,7 @@ class Api_apps extends CI_Controller {
 
 		$feedback['error'] 					= false;
 		$feedback['data']['saldo']			= "Rp ".number_format($saldo_data->amount, 0, '', '.');
+		$feedback['data']['transaction_data'] = $transactions ? true : false;
 		$feedback['data']['transactions'] 	= $transactions;
 
 		$this->write->feedback($feedback);
