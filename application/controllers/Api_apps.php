@@ -61,14 +61,12 @@ class Api_apps extends CI_Controller {
 
 	public function check_login_key() {
 		$this->load->model(array('login_sessions'));
-
-		$input = array('login_key' => 'required');
-
-		$login_data = $this->login_sessions->get_by_login_key($input['login_key']);
-		if (!$member_data) {
-			$this->write->error('Your session was expired');	
-		}
+		$this->auth->login_key();
 		$feedback['error'] = false;
 		$this->write->feedback($feedback);
+	}
+
+	public function get_main_data() {
+		$this->auth->login_key();
 	}
 }
