@@ -53,6 +53,6 @@ class Transactions extends CI_Model {
 		$query = $this->db->select('*')->from('apps_transactions')
 				->where('member_id', $member_id)
 				->get();
-		return $query->row();
+		return $query->result();
 	}
 }
