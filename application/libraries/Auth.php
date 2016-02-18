@@ -36,6 +36,7 @@ class Auth {
 
 	function input($input = array()) {
 		$CI =& get_instance();
+		$CI->load->library('form_validation');
 
 		foreach ($input as $key => $value) {
 			$CI->form_validation->set_rules($key, '', $value);
