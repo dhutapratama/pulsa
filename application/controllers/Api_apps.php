@@ -49,6 +49,7 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function get_main_data() {
+		$this->load->model(array('saldo', 'transactions', 'transaction_types'));
 		$login_data			= $this->auth->login_key();
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
