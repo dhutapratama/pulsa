@@ -5,14 +5,14 @@ class Write {
 		$CI =& get_instance();
 	}
 
-	private function error($message = 'Unknown error') {
+	public function error($message = 'Unknown error') {
 		$json['error']			= true;
 		$json['error_message']	= $message;
 		$this->feedback($json);
 		exit();
 	}
 
-	private function feedback($array_data) {
+	public function feedback($array_data) {
 		$CI 				=& get_instance();
 		$output['data'] 	= $array_data;
 		$CI->load->view('make_json', $output);
