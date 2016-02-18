@@ -14,7 +14,8 @@ class Api_apps extends CI_Controller {
 	public function get_login_key() {
 		$this->load->model(array('members', 'saldo'));
 
-		$input = array('device_id' => 'required');
+		$param = array('device_id' => 'required');
+		$input = $this->auth->input($param);
 
 		$member_data = $this->members->get_by_device_id($input['device_id']);
 		if (!$member_data) {
