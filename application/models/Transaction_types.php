@@ -27,8 +27,7 @@ class Transaction_types extends CI_Model {
 	public function get_by_id($id = '')
 	{
 		$query = $this->db->select('*')->from('apps_transaction_types')
-				->where('transaction_type_id', $id)
-				->get();
+				->where('transaction_type_id', $id);
 		return $query->row();
 	}
 
