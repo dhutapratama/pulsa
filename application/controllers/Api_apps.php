@@ -195,7 +195,7 @@ class Api_apps extends CI_Controller {
 		$transaction['amount']				= $products_data->harga;
 		$transaction['date']				= date("Y-m-d H:i:s");
 		$transaction['balance']				= $saldo_data->amount;
-		$this->transactions->insert($transactions);
+		$this->transactions->insert($transaction);
 
 		$feedback['error'] 				= false;
 		$feedback['data']['message']	= "Transaksi Sukses";
