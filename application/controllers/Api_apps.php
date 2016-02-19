@@ -175,7 +175,7 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Operator tidak ada untuk nomor ini");
 		}
 
-		$products_data = $this->products->get_by_id($input['product_id'], $input['kode_sms']);
+		$products_data = $this->products->get_by_operator_id_kode_sms($operators_data->operator_id, $input['kode_sms']);
 		if (!$products_data) {
 			$this->write->error("Nomor, Operator dan Kode tidak sama");
 		}

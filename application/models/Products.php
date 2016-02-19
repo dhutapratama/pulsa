@@ -54,4 +54,13 @@ class Products extends CI_Model {
 				->get();
 		return $query->result();
 	}
+
+	public function get_by_operator_id_kode_sms($operator_id = '', $kode_sms = '')
+	{
+		$query = $this->db->select('*')->from('apps_products')
+				->where('operator_id', $operator_id)
+				->where('kode_sms', $kode_sms)
+				->get();
+		return $query->result();
+	}
 }
