@@ -89,7 +89,6 @@ class Api_apps extends CI_Controller {
 			foreach ($products_data as $value) {
 				$operator_data = $this->operators->get_by_id($value->operator_id);
 				$products[$i]['operator']	= $operator_data->nama;
-				$products[$i]['kode']		= $value->kode_sms;
 				$products[$i]['produk']		= $value->tipe_pembelian;
 				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
 				$products[$i]['keterangan']	= $value->keterangan;
@@ -134,7 +133,6 @@ class Api_apps extends CI_Controller {
 			foreach ($products_data as $value) {
 				$operator_data = $this->operators->get_by_id($value->operator_id);
 				$products[$i]['operator']	= $operator_data->nama;
-				$products[$i]['kode']		= $value->kode_sms;
 				$products[$i]['produk']		= $value->tipe_pembelian;
 				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
 				$products[$i]['keterangan']	= $value->keterangan;
@@ -184,7 +182,6 @@ class Api_apps extends CI_Controller {
 		$feedback['error'] 				= false;
 		$feedback['data']['nomor']		= $input['nomor'];
 		$feedback['data']['operator']	= $operator_data->nama;
-		$feedback['data']['kode']		= $products_data->kode_sms;
 		$feedback['data']['produk']		= $products_data->tipe_pembelian;
 		$feedback['data']['harga']		= "Rp ".number_format($products_data->harga, 0, '', '.');
 		$feedback['data']['keterangan']	= $products_data->keterangan;
