@@ -132,6 +132,8 @@ class Api_apps extends CI_Controller {
 			$i = 0;
 			$products = array();
 			foreach ($products_data as $value) {
+				$operator_data = $this->operators->get_by_id($value->operator_id);
+				$products[$i]['operator']	= $operator_data->nama;
 				$products[$i]['kode']		= $value->kode_sms;
 				$products[$i]['produk']		= $value->tipe_pembelian;
 				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
@@ -179,13 +181,13 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Tidak ada produk yang dijual untuk operator ini");
 		}
 
-		$feedback['error'] 							= false;
-		$feedback['data']['nomor']					= $input['nomor'];
-		$feedback['data']['operator']				= $operator_data->nama;
-		$feedback['data']['product']['kode']		= $products_data->kode_sms;
-		$feedback['data']['product']['produk']		= $products_data->tipe_pembelian;
-		$feedback['data']['product']['harga']		= "Rp ".number_format($products_data->harga, 0, '', '.');
-		$feedback['data']['product']['keterangan']	= $products_data->keterangan;
+		$feedback['error'] 				= false;
+		$feedback['data']['nomor']		= $input['nomor'];
+		$feedback['data']['operator']	= $operator_data->nama;
+		$feedback['data']['kode']		= $products_data->kode_sms;
+		$feedback['data']['produk']		= $products_data->tipe_pembelian;
+		$feedback['data']['harga']		= "Rp ".number_format($products_data->harga, 0, '', '.');
+		$feedback['data']['keterangan']	= $products_data->keterangan;
 		$this->write->feedback($feedback);
 	}
 }
