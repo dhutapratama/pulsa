@@ -152,7 +152,7 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function konfirmasi_pembelian() {
-		$this->load->model(array('products', 'operators', 'prefix', 'transactions', 'balance'));
+		$this->load->model(array('products', 'operators', 'prefix', 'transactions', 'saldo'));
 
 		$login_data	= $this->auth->login_key();
 		$post_input = array('nomor' => 'required|numeric', 'kode_sms' => 'required');
@@ -186,7 +186,7 @@ class Api_apps extends CI_Controller {
 		$status[0] = "Pending";
 		$status[1] = "Sukses";
 		$status[2] = "Gagal";
-		$balance_data = $this->balance->get_by_id($login_data->balance_id);
+		$saldo_data = $this->saldo->get_by_id($login_data->balance_id);
 
 		$transaction['transaction_id']		= md5(time().rand(1000, 9999));
 		$transaction['member_id']			= $login_data->member_id;
@@ -194,7 +194,7 @@ class Api_apps extends CI_Controller {
 		$transaction['status']				= $status[$randomizer];
 		$transaction['amount']				= $products_data->harga;
 		$transaction['date']				= date("Y-m-d H:i:s");
-		$transaction['balance']				= $balance_data->amount;
+		$transaction['balance']				= $saldo_data->amount;
 		$this->transactions->insert($transactions);
 
 		$feedback['error'] 				= false;
