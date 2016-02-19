@@ -198,7 +198,7 @@ class Api_apps extends CI_Controller {
 		$this->transactions->insert($transaction);
 
 		$feedback['error'] 				= false;
-		$feedback['data']['message']	= "Transaksi Sukses";
+		$feedback['data']['message']	= "Transaksi ".$status[$randomizer];
 		$feedback['data']['refference']	= "TRX : ".md5(time());
 		$this->write->feedback($feedback);
 	}
