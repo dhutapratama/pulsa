@@ -133,6 +133,7 @@ class Api_apps extends CI_Controller {
 			foreach ($products_data as $value) {
 				$operator_data = $this->operators->get_by_id($value->operator_id);
 				$products[$i]['operator']	= $operator_data->nama;
+				$products[$i]['kode']		= $value->kode_sms;
 				$products[$i]['produk']		= $value->tipe_pembelian;
 				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
 				$products[$i]['keterangan']	= $value->keterangan;
@@ -154,7 +155,7 @@ class Api_apps extends CI_Controller {
 		$this->load->model(array('products', 'operators', 'prefix'));
 
 		$login_data	= $this->auth->login_key();
-		$post_input = array('nomor' => 'required|numeric', 'product_id' => 'required|numeric');
+		$post_input = array('nomor' => 'required|numeric', 'kode_sms' => 'required');
 		$input = $this->auth->input($post_input);
 
 		$prefix_3 = substr($input['nomor'], 0, 3);
@@ -174,17 +175,16 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Operator tidak ada untuk nomor ini");
 		}
 
-		$products_data = $this->products->get_by_id($input['product_id']);
+		$products_data = $this->products->get_by_id($input['product_id'], $input['kode_sms']);
 		if (!$products_data) {
-			$this->write->error("Tidak ada produk yang dijual untuk operator ini");
+			$this->write->error("Nomor, Operator dan Kode tidak sama");
 		}
 
+		// Proses transaksi
+
 		$feedback['error'] 				= false;
-		$feedback['data']['nomor']		= $input['nomor'];
-		$feedback['data']['operator']	= $operator_data->nama;
-		$feedback['data']['produk']		= $products_data->tipe_pembelian;
-		$feedback['data']['harga']		= "Rp ".number_format($products_data->harga, 0, '', '.');
-		$feedback['data']['keterangan']	= $products_data->keterangan;
+		$feedback['data']['message']	= "Transaksi Sukses";
+		$feedback['data']['refference']	= "TRX : ".md5(time());
 		$this->write->feedback($feedback);
 	}
 }
