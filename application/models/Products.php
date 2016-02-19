@@ -46,4 +46,12 @@ class Products extends CI_Model {
 		$this->db->where('product_id', $id);
 		$this->db->update('apps_products', $data);
 	}
+
+	public function get_by_operator_id($operator_id = '')
+	{
+		$query = $this->db->select('*')->from('apps_products')
+				->where('operator_id', $operator_id)
+				->get();
+		return $query->row();
+	}
 }

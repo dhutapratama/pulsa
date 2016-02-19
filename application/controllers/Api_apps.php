@@ -77,4 +77,115 @@ class Api_apps extends CI_Controller {
 
 		$this->write->feedback($feedback);
 	}
+
+	public function get_daftar_harga() {
+		$this->load->model(array('products', 'operators'));
+		$login_data	= $this->auth->login_key();
+		$products_data = $this->products->get();
+
+		if ($products_data) {
+			$i = 0;
+			$products = array();
+			foreach ($products_data as $value) {
+				$operator_data = $this->operators->get_by_id($value->operator_id);
+				$products[$i]['operator']	= $operator_data->nama;
+				$products[$i]['kode']		= $value->kode_sms;
+				$products[$i]['produk']		= $value->tipe_pembelian;
+				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
+				$products[$i]['keterangan']	= $value->keterangan;
+				$i++;
+			}
+		} else {
+			$products = false;
+		}
+
+		$feedback['error'] 					= false;
+		$feedback['data']['products_data']	= $products ? true : false;
+		$feedback['data']['products']		= $products;
+
+		$this->write->feedback($feedback);
+	}
+
+	public function cek_nomor() {
+		$this->load->model(array('products', 'operators', 'prefix'));
+
+		$login_data	= $this->auth->login_key();
+		$post_input = array('prefix' => 'required|numeric');
+		$input = $this->auth->input($post_input);
+
+		$prefix_data = $this->prefix->get_by_number($input['prefix']);
+		if (!$prefix_data) {
+			$this->write->error("Prefix nomor handphone salah");
+		}
+
+		$operators_data = $this->operators->get_by_id($prefix_data->operator_id);
+		if (!$operators_data) {
+			$this->write->error("Operator tidak ada untuk nomor ini");
+		}
+
+		$products_data = $this->products->get_by_operator_id($prefix_data->operator_id);
+		if (!$products_data) {
+			$this->write->error("Tidak ada produk yang dijual untuk operator ini");
+		}
+
+		if ($products_data) {
+			$i = 0;
+			$products = array();
+			foreach ($products_data as $value) {
+				$products[$i]['kode']		= $value->kode_sms;
+				$products[$i]['produk']		= $value->tipe_pembelian;
+				$products[$i]['harga']		= "Rp ".number_format($value->harga, 0, '', '.');
+				$products[$i]['keterangan']	= $value->keterangan;
+				$i++;
+			}
+		} else {
+			$products = false;
+		}
+
+		$feedback['error'] 					= false;
+		$feedback['data']['operator']		= $operators_data->nama;
+		$feedback['data']['products_data']	= $products ? true : false;
+		$feedback['data']['products']		= $products;
+
+		$this->write->feedback($feedback);
+	}
+
+	public function konfirmasi_pembelian() {
+		$this->load->model(array('products', 'operators', 'prefix'));
+
+		$login_data	= $this->auth->login_key();
+		$post_input = array('nomor' => 'required|numeric', 'product_id' => 'required|numeric');
+		$input = $this->auth->input($post_input);
+
+		$prefix_3 = substr($input['nomor'], 0, 3);
+		$prefix_4 = substr($input['nomor'], 0, 4);
+
+
+		$prefix_data = $this->prefix->get_by_number($prefix_4);
+		if (!$prefix_data) {
+			$prefix_data = $this->prefix->get_by_number($prefix_3);
+			if (!$prefix_data) {
+				$this->write->error("Nomor prefix tidak ditemukan");
+			}
+		}
+
+		$operators_data = $this->operators->get_by_id($prefix_data->operator_id);
+		if (!$operators_data) {
+			$this->write->error("Operator tidak ada untuk nomor ini");
+		}
+
+		$products_data = $this->products->get_by_id($input['product_id']);
+		if (!$products_data) {
+			$this->write->error("Tidak ada produk yang dijual untuk operator ini");
+		}
+
+		$feedback['error'] 							= false;
+		$feedback['data']['nomor']					= $input['nomor'];
+		$feedback['data']['operator']				= $operator_data->nama;
+		$feedback['data']['product']['kode']		= $products_data->kode_sms;
+		$feedback['data']['product']['produk']		= $products_data->tipe_pembelian;
+		$feedback['data']['product']['harga']		= "Rp ".number_format($products_data->harga, 0, '', '.');
+		$feedback['data']['product']['keterangan']	= $products_data->keterangan;
+		$this->write->feedback($feedback);
+	}
 }
