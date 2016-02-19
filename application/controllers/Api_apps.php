@@ -188,7 +188,7 @@ class Api_apps extends CI_Controller {
 		$status[2] = "Gagal";
 		$saldo_data = $this->saldo->get_by_id($login_data->saldo_id);
 
-		$transaction['transaction_id']		= md5(time().rand(1000, 9999));
+		//$transaction['transaction_id']		= md5(time().rand(1000, 9999));
 		$transaction['member_id']			= $login_data->member_id;
 		$transaction['transaction_type_id']	= 2;
 		$transaction['status']				= $status[$randomizer];
