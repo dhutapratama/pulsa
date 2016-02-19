@@ -61,6 +61,6 @@ class Products extends CI_Model {
 				->where('operator_id', $operator_id)
 				->where('kode_sms', $kode_sms)
 				->get();
-		return $query->result();
+		return $query->row();
 	}
 }
