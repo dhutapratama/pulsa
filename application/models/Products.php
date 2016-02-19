@@ -52,6 +52,6 @@ class Products extends CI_Model {
 		$query = $this->db->select('*')->from('apps_products')
 				->where('operator_id', $operator_id)
 				->get();
-		return $query->row();
+		return $query->result();
 	}
 }
