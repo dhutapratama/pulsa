@@ -252,7 +252,7 @@ class Api_apps extends CI_Controller {
 		$consumer_key = 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
 		$secret_key = '15e488b278f236337dd4fb133d8611b4c7384331';
 
-		$this->jymengine->initialize($consumer_key, $secret_key, $ym_username, $ym_password)->debug = true;
+		$this->jymengine->initialize($consumer_key, $secret_key, $ym_username, $ym_password);
 
 		if ($this->jymengine->debug) echo '> Fetching request token'. PHP_EOL;
 		if (!$this->jymengine->fetch_request_token()) die('Fetching request token failed');
