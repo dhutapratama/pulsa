@@ -3,12 +3,92 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Api_apps extends CI_Controller {
 
+	private $consumer_key 	= 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
+	private $secret_key 	= '15e488b278f236337dd4fb133d8611b4c7384331';
+
 	public function __construct() {
         parent::__construct();
         //$this->load->library();
         if ($_SERVER['REQUEST_METHOD'] != "POST") {
         	redirect();
         }
+    }
+
+    public function handshake() {
+    	$param = array('ym_username' => 'required', 'ym_password' => 'required', 'pin' => 'required');
+		$input = $this->auth->input($param);
+
+		$this->load->library('jymengine');
+
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_username']);
+
+		$i = 0;
+		$success = false;
+		while ($i <= 3) {
+			$i++;
+
+			if (!$this->jymengine->fetch_request_token()) {
+				continue;
+			}
+			if (!$this->jymengine->fetch_access_token()) {
+				continue;
+			}
+			if (!$this->jymengine->signon()){
+				continue;
+			}
+
+			// All signin step passed
+			$success = true;
+			break;
+		}
+
+		if ($success) {
+
+			$out		= "S.".$input['pin'];
+			$trx_ym_id	= 'dutasms';
+			if ($this->jymengine->send_message($trx_ym_id, json_encode($out))) {
+				$i = 0;
+				$get_content = false;
+				while ($i <= 3) {
+					$i++;
+					$seq = -1;
+					$resp = $this->jymengine->fetch_long_notification($seq+1);
+					if (isset($resp))
+					{
+						$get_content = true;
+						break;
+					}
+				}
+			} else {
+				echo "You can't send message";
+			}
+		} else {
+			// not success get data
+			// maybe wrong username / password
+			echo "Please check username / password";
+		}
+
+		if ($get_content) {
+			// YM Get Data
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
+					
+					else if ($key == 'message') //incoming message
+					{
+						if ($sender == $trx_ym_id) {
+							
+							echo $val['msg'];
+						}
+					}
+				}
+			}
+		} else {
+			echo "Please try again";
+		}
+			
     }
 
     public function registrasi() {
@@ -21,16 +101,11 @@ class Api_apps extends CI_Controller {
 		if (!$member_data) {
 			// Create new membership
 			$date = date('Y-m-d H:i:s');
-			$member['device_id']			= '';
 			$member['name']					= $input['name'];
 			$member['email']				= $input['email'];
 			$member['password']				= $input['password'];
 			$member['phone']				= $input['phone'];
-			$member['is_email_verified']	= 0;
-			$member['is_phone_verified']	= 0;
 			$member['last_update']			= $date;
-			$member['ym_username']			= '';
-			$member['ym_password']			= '';
 			$member['pin']					= '';
 
 
@@ -247,20 +322,15 @@ class Api_apps extends CI_Controller {
 	public function yahoo_messenger() {
 		$this->load->library('jymengine');
 
-		$ym_username = 'dhuta_pratama';
-		$ym_password = '48624862aA';
+		$ym_username = 'dutasms';
+		$ym_password = '169753';
 		$consumer_key = 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
 		$secret_key = '15e488b278f236337dd4fb133d8611b4c7384331';
 
 		$this->jymengine->initialize($consumer_key, $secret_key, $ym_username, $ym_password);
 
-		if ($this->jymengine->debug) echo '> Fetching request token'. PHP_EOL;
 		if (!$this->jymengine->fetch_request_token()) die('Fetching request token failed');
-
-		if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
 		if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
-
-		if ($this->jymengine->debug) echo '> Signon as: '. $ym_username. PHP_EOL;
 		if (!$this->jymengine->signon('I am login from PHP code')) die('Signon failed');
 
 		$seq = -1;
@@ -272,10 +342,7 @@ class Api_apps extends CI_Controller {
 			{		
 				if ($this->jymengine->get_error() != -10)
 				{
-					if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
-					if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');				
-					
-					if ($this->jymengine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
+					if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
 					if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
 					
 					$seq = -1;
@@ -285,94 +352,15 @@ class Api_apps extends CI_Controller {
 			
 			foreach ($resp as $row)
 			{
-				foreach ($row as $key=>$val)
+				foreach ($row as $key => $val)
 				{
 					if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
 					
-					/*
-					 * do actions
-					 */
-					if ($key == 'buddyInfo') //contact list
-					{
-						if (!isset($val['contact'])) continue;
-						
-						if ($this->jymengine->debug) echo PHP_EOL. 'Contact list: '. PHP_EOL;
-						foreach ($val['contact'] as $item)
-						{
-							if ($this->jymengine->debug) echo $item['sender']. PHP_EOL;
-						}
-						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
-					}
-					
 					else if ($key == 'message') //incoming message
-					{
-						if ($this->jymengine->debug) echo '+ Incoming message from: "'. $val['sender']. '" on "'. date('H:i:s', $val['timeStamp']). '"'. PHP_EOL;
-						if ($this->jymengine->debug) echo '   '. $val['msg']. PHP_EOL;
-						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
-						
-						//reply
-						$words = explode(' ', trim(strtolower($val['msg'])));
-						if ($words[0] == 'help')
-						{
-							$out = 'This is Yahoo! Open API demo'. PHP_EOL;
-							$out .= '  To get recent news from yahoo type: news'. PHP_EOL;
-							$out .= '  To get recent entertainment news from yahoo type: omg'. PHP_EOL;						
-							$out .= '  To change my/robot status type: status newstatus'. PHP_EOL;
-						}
-						else if ($words[0] == 'news')
-						{
-							if ($this->jymengine->debug) echo '> Retrieving news rss'. PHP_EOL;
-							$rss = file_get_contents('http://rss.news.yahoo.com/rss/topstories');
-													
-							if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
-							{
-								$out = 'Recent Yahoo News:'. PHP_EOL;
-								for ($i=2; $i<7; $i++)
-								{
-									$out .= str_replace("\n", ' ', $m[1][$i]). PHP_EOL;
-								}
-							}
-						}
-						else if ($words[0] == 'omg')
-						{
-							if ($this->jymengine->debug) echo '> Retrieving OMG news rss'. PHP_EOL;
-							$rss = file_get_contents('http://rss.omg.yahoo.com/latest/news/');
-													
-							if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
-							{
-								$out = 'Recent OMG News:'. PHP_EOL;
-								for ($i=2; $i<7; $i++)
-								{
-									$out .= str_replace(array('<![CDATA[', ']]>'), array('', ''), $m[1][$i]). PHP_EOL;
-								}
-							}
-						}	
-						else if ($words[0] == 'status')
-						{
-							$this->jymengine->change_presence(str_replace('status ', '', strtolower($val['msg'])));
-							$out = 'My status is changed';
-						}	
-						else
-						{
-							$out = 'Please type: help';
-						}
-						
-						//send message
-						if ($this->jymengine->debug) echo '> Sending reply message '. PHP_EOL;
-						if ($this->jymengine->debug) echo '    '. $out. PHP_EOL;	
-						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+					{						
+						$val['sender']	= 'misterh2h';
+						$val['msg']		= '';
 						$this->jymengine->send_message($val['sender'], json_encode($out));
-					}
-					
-					else if ($key == 'buddyAuthorize') //incoming contact request
-					{
-						if ($this->jymengine->debug) echo PHP_EOL. 'Accept buddy request from: '. $val['sender']. PHP_EOL;					
-						if ($this->jymengine->debug) echo '----------'. PHP_EOL;	
-						if (!$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list'))
-						{
-							$this->jymengine->delete_contact($val['sender']);
-							$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list');
-						}
 					}
 				}
 			}

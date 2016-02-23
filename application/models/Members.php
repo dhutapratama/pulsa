@@ -2,17 +2,12 @@
 
 /*
 $member['member_id']
-$member['device_id']
 $member['name']
-$member['email']
-$member['password']
-$member['phone']
-$member['is_email_verified']
-$member['is_phone_verified']
-$member['last_update']
 $member['ym_username']
 $member['ym_password']
+$member['handphone']
 $member['pin']
+$member['last_update']
 */
 
 class Members extends CI_Model {
@@ -51,13 +46,5 @@ class Members extends CI_Model {
 	{
 		$this->db->where('member_id', $id);
 		$this->db->update('apps_members', $data);
-	}
-
-	public function get_by_device_id($device_id = '')
-	{
-		$query = $this->db->select('*')->from('apps_members')
-				->where('device_id', $device_id)
-				->get();
-		return $query->row();
 	}
 }
