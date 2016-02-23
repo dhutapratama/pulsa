@@ -52,15 +52,17 @@ class Jymengine
 	/*
 	 * constructor
 	 */
-	public function __construct($consumer_key = '', $secret_key = '', $username = '', $password = '')
-	{
+	public function __construct()
+	{		
+		$this->_ym = array();
+		$this->_error = null;
+	}
+
+	public function initialize($consumer_key = '', $secret_key = '', $username = '', $password = '') {
 		$this->_config['consumer_key'] = $consumer_key;
 		$this->_config['secret_key'] = $secret_key;
 		$this->_config['username'] = $username;
 		$this->_config['password'] = $password;
-		
-		$this->_ym = array();
-		$this->_error = null;
 	}
 	
 	public function fetch_request_token()
