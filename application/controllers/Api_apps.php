@@ -33,7 +33,7 @@ class Api_apps extends CI_Controller {
 			if (!$this->jymengine->fetch_access_token()) {
 				continue;
 			}
-			if (!$this->jymengine->signon()){
+			if (!$this->jymengine->signon('PULSAPPS')){
 				continue;
 			}
 
