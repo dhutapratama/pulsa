@@ -245,7 +245,8 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function yahoo_messenger() {
-		$this->load->library(array('jymengine'));
+		$this->load->library('jymengine');
+		
 		$ym_username = 'dhuta_pratama';
 		$ym_password = '48624862aA';
 		$consumer_key = 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
