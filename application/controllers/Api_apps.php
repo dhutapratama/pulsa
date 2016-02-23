@@ -43,9 +43,10 @@ class Api_apps extends CI_Controller {
 		}
 
 		if ($success) {
-
 			$out		= "S.".$input['pin'];
 			$trx_ym_id	= 'dutasms';
+			$get_content = false;
+
 			if ($this->jymengine->send_message($trx_ym_id, json_encode($out))) {
 				$i = 0;
 				$get_content = false;
@@ -53,6 +54,7 @@ class Api_apps extends CI_Controller {
 					$i++;
 					$seq = -1;
 					$resp = $this->jymengine->fetch_long_notification($seq+1);
+					print_r($resp); // additional
 					if (isset($resp))
 					{
 						$get_content = true;
