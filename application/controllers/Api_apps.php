@@ -279,8 +279,7 @@ class Api_apps extends CI_Controller {
 					if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
 					
 					$seq = -1;
-				}
-				continue;							
+				}				
 			}
 			
 			
