@@ -263,116 +263,117 @@ class Api_apps extends CI_Controller {
 		if ($this->jymengine->debug) echo '> Signon as: '. $ym_username. PHP_EOL;
 		if (!$this->jymengine->signon('I am login from PHP code')) die('Signon failed');
 
-	$seq = -1;
-	$resp = $this->jymengine->fetch_long_notification($seq+1);
+		$seq = -1;
+		$resp = $this->jymengine->fetch_long_notification($seq+1);
 
-	if (isset($resp))
-	{	
-		if ($resp === false) 
-		{		
-			if ($this->jymengine->get_error() != -10)
-			{
-				if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
-				if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');				
-				
-				if ($this->jymengine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
-				if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
-				
-				$seq = -1;
+		if (isset($resp))
+		{	
+			if ($resp === false) 
+			{		
+				if ($this->jymengine->get_error() != -10)
+				{
+					if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
+					if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');				
+					
+					if ($this->jymengine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
+					if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
+					
+					$seq = -1;
+				}
+				continue;							
 			}
-			continue;							
-		}
-		
-		
-		foreach ($resp as $row)
-		{
-			foreach ($row as $key=>$val)
+			
+			
+			foreach ($resp as $row)
 			{
-				if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
-				
-				/*
-				 * do actions
-				 */
-				if ($key == 'buddyInfo') //contact list
+				foreach ($row as $key=>$val)
 				{
-					if (!isset($val['contact'])) continue;
+					if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
 					
-					if ($this->jymengine->debug) echo PHP_EOL. 'Contact list: '. PHP_EOL;
-					foreach ($val['contact'] as $item)
+					/*
+					 * do actions
+					 */
+					if ($key == 'buddyInfo') //contact list
 					{
-						if ($this->jymengine->debug) echo $item['sender']. PHP_EOL;
-					}
-					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
-				}
-				
-				else if ($key == 'message') //incoming message
-				{
-					if ($this->jymengine->debug) echo '+ Incoming message from: "'. $val['sender']. '" on "'. date('H:i:s', $val['timeStamp']). '"'. PHP_EOL;
-					if ($this->jymengine->debug) echo '   '. $val['msg']. PHP_EOL;
-					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
-					
-					//reply
-					$words = explode(' ', trim(strtolower($val['msg'])));
-					if ($words[0] == 'help')
-					{
-						$out = 'This is Yahoo! Open API demo'. PHP_EOL;
-						$out .= '  To get recent news from yahoo type: news'. PHP_EOL;
-						$out .= '  To get recent entertainment news from yahoo type: omg'. PHP_EOL;						
-						$out .= '  To change my/robot status type: status newstatus'. PHP_EOL;
-					}
-					else if ($words[0] == 'news')
-					{
-						if ($this->jymengine->debug) echo '> Retrieving news rss'. PHP_EOL;
-						$rss = file_get_contents('http://rss.news.yahoo.com/rss/topstories');
-												
-						if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
+						if (!isset($val['contact'])) continue;
+						
+						if ($this->jymengine->debug) echo PHP_EOL. 'Contact list: '. PHP_EOL;
+						foreach ($val['contact'] as $item)
 						{
-							$out = 'Recent Yahoo News:'. PHP_EOL;
-							for ($i=2; $i<7; $i++)
+							if ($this->jymengine->debug) echo $item['sender']. PHP_EOL;
+						}
+						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+					}
+					
+					else if ($key == 'message') //incoming message
+					{
+						if ($this->jymengine->debug) echo '+ Incoming message from: "'. $val['sender']. '" on "'. date('H:i:s', $val['timeStamp']). '"'. PHP_EOL;
+						if ($this->jymengine->debug) echo '   '. $val['msg']. PHP_EOL;
+						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+						
+						//reply
+						$words = explode(' ', trim(strtolower($val['msg'])));
+						if ($words[0] == 'help')
+						{
+							$out = 'This is Yahoo! Open API demo'. PHP_EOL;
+							$out .= '  To get recent news from yahoo type: news'. PHP_EOL;
+							$out .= '  To get recent entertainment news from yahoo type: omg'. PHP_EOL;						
+							$out .= '  To change my/robot status type: status newstatus'. PHP_EOL;
+						}
+						else if ($words[0] == 'news')
+						{
+							if ($this->jymengine->debug) echo '> Retrieving news rss'. PHP_EOL;
+							$rss = file_get_contents('http://rss.news.yahoo.com/rss/topstories');
+													
+							if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
 							{
-								$out .= str_replace("\n", ' ', $m[1][$i]). PHP_EOL;
+								$out = 'Recent Yahoo News:'. PHP_EOL;
+								for ($i=2; $i<7; $i++)
+								{
+									$out .= str_replace("\n", ' ', $m[1][$i]). PHP_EOL;
+								}
 							}
 						}
-					}
-					else if ($words[0] == 'omg')
-					{
-						if ($this->jymengine->debug) echo '> Retrieving OMG news rss'. PHP_EOL;
-						$rss = file_get_contents('http://rss.omg.yahoo.com/latest/news/');
-												
-						if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
+						else if ($words[0] == 'omg')
 						{
-							$out = 'Recent OMG News:'. PHP_EOL;
-							for ($i=2; $i<7; $i++)
+							if ($this->jymengine->debug) echo '> Retrieving OMG news rss'. PHP_EOL;
+							$rss = file_get_contents('http://rss.omg.yahoo.com/latest/news/');
+													
+							if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
 							{
-								$out .= str_replace(array('<![CDATA[', ']]>'), array('', ''), $m[1][$i]). PHP_EOL;
+								$out = 'Recent OMG News:'. PHP_EOL;
+								for ($i=2; $i<7; $i++)
+								{
+									$out .= str_replace(array('<![CDATA[', ']]>'), array('', ''), $m[1][$i]). PHP_EOL;
+								}
 							}
+						}	
+						else if ($words[0] == 'status')
+						{
+							$this->jymengine->change_presence(str_replace('status ', '', strtolower($val['msg'])));
+							$out = 'My status is changed';
+						}	
+						else
+						{
+							$out = 'Please type: help';
 						}
-					}	
-					else if ($words[0] == 'status')
-					{
-						$this->jymengine->change_presence(str_replace('status ', '', strtolower($val['msg'])));
-						$out = 'My status is changed';
-					}	
-					else
-					{
-						$out = 'Please type: help';
+						
+						//send message
+						if ($this->jymengine->debug) echo '> Sending reply message '. PHP_EOL;
+						if ($this->jymengine->debug) echo '    '. $out. PHP_EOL;	
+						if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+						$this->jymengine->send_message($val['sender'], json_encode($out));
 					}
 					
-					//send message
-					if ($this->jymengine->debug) echo '> Sending reply message '. PHP_EOL;
-					if ($this->jymengine->debug) echo '    '. $out. PHP_EOL;	
-					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
-					$this->jymengine->send_message($val['sender'], json_encode($out));
-				}
-				
-				else if ($key == 'buddyAuthorize') //incoming contact request
-				{
-					if ($this->jymengine->debug) echo PHP_EOL. 'Accept buddy request from: '. $val['sender']. PHP_EOL;					
-					if ($this->jymengine->debug) echo '----------'. PHP_EOL;	
-					if (!$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list'))
+					else if ($key == 'buddyAuthorize') //incoming contact request
 					{
-						$this->jymengine->delete_contact($val['sender']);
-						$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list');
+						if ($this->jymengine->debug) echo PHP_EOL. 'Accept buddy request from: '. $val['sender']. PHP_EOL;					
+						if ($this->jymengine->debug) echo '----------'. PHP_EOL;	
+						if (!$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list'))
+						{
+							$this->jymengine->delete_contact($val['sender']);
+							$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list');
+						}
 					}
 				}
 			}
