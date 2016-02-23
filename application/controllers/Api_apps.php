@@ -11,6 +11,47 @@ class Api_apps extends CI_Controller {
         }
     }
 
+    public function registrasi() {
+    	$this->load->model(array('members', 'saldo'));
+
+		$param = array('device_id' => 'required');
+		$input = $this->auth->input($param);
+
+		$member_data = $this->members->get_by_device_id($input['device_id']);
+		if (!$member_data) {
+			// Create new membership
+			$date = date('Y-m-d H:i:s');
+			$member['device_id']			= '';
+			$member['name']					= $input['name'];
+			$member['email']				= $input['email'];
+			$member['password']				= $input['password'];
+			$member['phone']				= $input['phone'];
+			$member['is_email_verified']	= 0;
+			$member['is_phone_verified']	= 0;
+			$member['last_update']			= $date;
+			$member['ym_username']			= '';
+			$member['ym_password']			= '';
+			$member['pin']					= '';
+
+
+			$member['device_id']			= $input['device_id'];
+			$member['is_email_verified']	= '';
+			$member['is_phone_verified']	= '';
+			$this->members->insert($member);
+			$member_id = $this->db->insert_id();
+
+			$saldo['member_id']		= $member_id;
+			$saldo['amount']		= 0;
+			$saldo['last_update']	= $date;
+			$this->saldo->insert($saldo);
+			$saldo_id = $this->db->insert_id();
+
+			$this->auth->add_login_session($member_id, $saldo_id, $input['device_id']);
+		}
+		$saldo_data = $this->saldo->get_by_member_id($member_data->member_id);
+		$this->auth->add_login_session($member_data->member_id, $saldo_data->saldo_id, $input['device_id']);
+    }
+
 	public function get_login_key() {
 		$this->load->model(array('members', 'saldo'));
 
@@ -23,8 +64,8 @@ class Api_apps extends CI_Controller {
 			$date = date('Y-m-d H:i:s');
 
 			$member['device_id']			= $input['device_id'];
-			$member['is_email_verified']	= '';
-			$member['is_phone_verified']	= '';
+			$member['is_email_verified']	= '0';
+			$member['is_phone_verified']	= '0';
 			$member['last_update']			= $date;
 			$this->members->insert($member);
 			$member_id = $this->db->insert_id();
@@ -201,5 +242,140 @@ class Api_apps extends CI_Controller {
 		$feedback['data']['message']	= "Transaksi ".$status[$randomizer];
 		$feedback['data']['refference']	= "TRX : ".md5(time());
 		$this->write->feedback($feedback);
+	}
+
+	public function yahoo_messenger() {
+		$this->load->library(array('jymengine'));
+		$ym_username = 'dhuta_pratama';
+		$ym_password = '48624862aA';
+		$consumer_key = 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
+		$secret_key = '15e488b278f236337dd4fb133d8611b4c7384331';
+
+		$this->jymengine($consumer_key, $secret_key, $ym_username, $ym_password)
+			->debug = true;
+
+		if ($this->jymengine->debug) echo '> Fetching request token'. PHP_EOL;
+		if (!$this->jymengine->fetch_request_token()) die('Fetching request token failed');
+
+		if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
+		if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
+
+		if ($this->jymengine->debug) echo '> Signon as: '. $ym_username. PHP_EOL;
+		if (!$this->jymengine->signon('I am login from PHP code')) die('Signon failed');
+
+	$seq = -1;
+	$resp = $this->jymengine->fetch_long_notification($seq+1);
+
+	if (isset($resp))
+	{	
+		if ($resp === false) 
+		{		
+			if ($this->jymengine->get_error() != -10)
+			{
+				if ($this->jymengine->debug) echo '> Fetching access token'. PHP_EOL;
+				if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');				
+				
+				if ($this->jymengine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
+				if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
+				
+				$seq = -1;
+			}
+			continue;							
+		}
+		
+		
+		foreach ($resp as $row)
+		{
+			foreach ($row as $key=>$val)
+			{
+				if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
+				
+				/*
+				 * do actions
+				 */
+				if ($key == 'buddyInfo') //contact list
+				{
+					if (!isset($val['contact'])) continue;
+					
+					if ($this->jymengine->debug) echo PHP_EOL. 'Contact list: '. PHP_EOL;
+					foreach ($val['contact'] as $item)
+					{
+						if ($this->jymengine->debug) echo $item['sender']. PHP_EOL;
+					}
+					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+				}
+				
+				else if ($key == 'message') //incoming message
+				{
+					if ($this->jymengine->debug) echo '+ Incoming message from: "'. $val['sender']. '" on "'. date('H:i:s', $val['timeStamp']). '"'. PHP_EOL;
+					if ($this->jymengine->debug) echo '   '. $val['msg']. PHP_EOL;
+					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+					
+					//reply
+					$words = explode(' ', trim(strtolower($val['msg'])));
+					if ($words[0] == 'help')
+					{
+						$out = 'This is Yahoo! Open API demo'. PHP_EOL;
+						$out .= '  To get recent news from yahoo type: news'. PHP_EOL;
+						$out .= '  To get recent entertainment news from yahoo type: omg'. PHP_EOL;						
+						$out .= '  To change my/robot status type: status newstatus'. PHP_EOL;
+					}
+					else if ($words[0] == 'news')
+					{
+						if ($this->jymengine->debug) echo '> Retrieving news rss'. PHP_EOL;
+						$rss = file_get_contents('http://rss.news.yahoo.com/rss/topstories');
+												
+						if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
+						{
+							$out = 'Recent Yahoo News:'. PHP_EOL;
+							for ($i=2; $i<7; $i++)
+							{
+								$out .= str_replace("\n", ' ', $m[1][$i]). PHP_EOL;
+							}
+						}
+					}
+					else if ($words[0] == 'omg')
+					{
+						if ($this->jymengine->debug) echo '> Retrieving OMG news rss'. PHP_EOL;
+						$rss = file_get_contents('http://rss.omg.yahoo.com/latest/news/');
+												
+						if (preg_match_all('|<title>(.*?)</title>|is', $rss, $m))
+						{
+							$out = 'Recent OMG News:'. PHP_EOL;
+							for ($i=2; $i<7; $i++)
+							{
+								$out .= str_replace(array('<![CDATA[', ']]>'), array('', ''), $m[1][$i]). PHP_EOL;
+							}
+						}
+					}	
+					else if ($words[0] == 'status')
+					{
+						$this->jymengine->change_presence(str_replace('status ', '', strtolower($val['msg'])));
+						$out = 'My status is changed';
+					}	
+					else
+					{
+						$out = 'Please type: help';
+					}
+					
+					//send message
+					if ($this->jymengine->debug) echo '> Sending reply message '. PHP_EOL;
+					if ($this->jymengine->debug) echo '    '. $out. PHP_EOL;	
+					if ($this->jymengine->debug) echo '----------'. PHP_EOL;
+					$this->jymengine->send_message($val['sender'], json_encode($out));
+				}
+				
+				else if ($key == 'buddyAuthorize') //incoming contact request
+				{
+					if ($this->jymengine->debug) echo PHP_EOL. 'Accept buddy request from: '. $val['sender']. PHP_EOL;					
+					if ($this->jymengine->debug) echo '----------'. PHP_EOL;	
+					if (!$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list'))
+					{
+						$this->jymengine->delete_contact($val['sender']);
+						$this->jymengine->response_contact($val['sender'], true, 'Welcome to my list');
+					}
+				}
+			}
+		}
 	}
 }

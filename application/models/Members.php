@@ -10,6 +10,9 @@ $member['phone']
 $member['is_email_verified']
 $member['is_phone_verified']
 $member['last_update']
+$member['ym_username']
+$member['ym_password']
+$member['pin']
 */
 
 class Members extends CI_Model {
