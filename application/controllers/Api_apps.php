@@ -50,17 +50,27 @@ class Api_apps extends CI_Controller {
 			if ($this->jymengine->send_message($trx_ym_id, json_encode($out))) {
 				$i = 0;
 				$get_content = false;
-				while ($i <= 3) {
-					$i++;
+				while (true) {
 					$seq = -1;
 					$resp = $this->jymengine->fetch_long_notification($seq+1);
-					print_r($resp); // additional
-					if (isset($resp))
-					{
-						$get_content = true;
-						break;
+					if ($resp === false) 
+					{		
+						if ($engine->get_error() != -10)
+						{
+							if ($engine->debug) echo '> Fetching access token'. PHP_EOL;
+							if (!$engine->fetch_access_token()) die('Fetching access token failed');				
+							
+							if ($engine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
+							if (!$engine->signon(date('H:i:s'))) die('Signon failed');
+							
+							$seq = -1;
+						}
+						continue;							
 					}
+					break;
 				}
+				print_r($resp); // additional
+				$get_content = true;
 			} else {
 				echo "You can't send message";
 			}
