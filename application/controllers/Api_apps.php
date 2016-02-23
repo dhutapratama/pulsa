@@ -376,6 +376,8 @@ class Api_apps extends CI_Controller {
 					}
 				}
 			}
+
+			print_r($resp);
 		}
 	}
 }
