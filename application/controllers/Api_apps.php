@@ -101,6 +101,7 @@ class Api_apps extends CI_Controller {
 			$saldo['amount']		= 0;
 			$saldo['last_update']	= date("Y-m-d H:i:s");
 			$this->saldo->insert($saldo);
+			$saldo_id = $this->db->insert_id();
 		} else {
 			$member_id = $login_data->member_id;
 			$saldo_id = $login_data->saldo_id;
