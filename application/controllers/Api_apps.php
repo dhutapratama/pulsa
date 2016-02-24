@@ -3,8 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Api_apps extends CI_Controller {
 
-	private $consumer_key 	= 'dj0yJmk9d0FYSVVkWFdQdUlUJmQ9WVdrOVZ6VlJkMmcyTXpZbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1mYQ--';
-	private $secret_key 	= '42ee4f37b4e7edf66c10611c6cd8a90affb0d15c';
+	private $consumer_key 	= 'dj0yJmk9VXpraU05Tko3NGNpJmQ9WVdrOWVUaE5Tbmw0TTJNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1kNg--';
+	private $secret_key 	= '13b7d68db3f35f230363fdc9ae14d6aad5d3db5a';
 
 	public function __construct() {
         parent::__construct();
@@ -69,6 +69,8 @@ class Api_apps extends CI_Controller {
 				}
 			}	
 		}
+
+		$this->jymengine->signoff();
     }
 
     public function registrasi() {
