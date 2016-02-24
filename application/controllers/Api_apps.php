@@ -285,8 +285,36 @@ class Api_apps extends CI_Controller {
 
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Transaksi anda telah diproses";
-		$feedback['data']['refference']	= "TRX : ".md5(time());
+		$feedback['data']['refference']		= "TRX : ".md5(time());
 
 		$this->write->feedback($feedback);
+	}
+
+	public function save_nama() {
+		$this->load->model(array('members'));
+
+		$login_data	= $this->auth->login_key();
+		$post_input = array('nama' => 'required');
+		$input = $this->auth->input($post_input);
+
+		$member['name'] = $input['nama'];
+		$this->members->update($login_data->member_id, $member);
+
+		$feedback['error'] 					= false;
+		$feedback['data']['message']		= "Berhasil";
+	}
+
+	public function save_pin() {
+		$this->load->model(array('members'));
+
+		$login_data	= $this->auth->login_key();
+		$post_input = array('pin' => 'required');
+		$input = $this->auth->input($post_input);
+
+		$member['pin'] = $input['pin'];
+		$this->members->update($login_data->member_id, $member);
+
+		$feedback['error'] 					= false;
+		$feedback['data']['message']		= "Berhasil";
 	}
 }
