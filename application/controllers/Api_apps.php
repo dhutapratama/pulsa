@@ -94,7 +94,7 @@ class Api_apps extends CI_Controller {
 			$member['handphone']	= '081';
 			$member['pin']			= $input['pin'];
 			$member['last_update']	= date("Y-m-d H:i:s");
-			$this->members->input($member);
+			$this->members->insert($member);
 			$member_id = $this->db->insert_id();
 
 			$saldo['member_id']		= $member_id;
