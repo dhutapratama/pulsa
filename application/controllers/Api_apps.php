@@ -20,7 +20,7 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->load->model(array('members', 'saldo'));
-		$member_data = $this->members->get_by_username($input['ym_username']);
+		$member_data = $this->members->get_by_ym_username($input['ym_username']);
 		if ($member_data) {
 			$login_data = $this->members->get_by_login($input['ym_username'], $input['ym_password'], $input['pin']);
 			if (!$login_data) {
