@@ -19,7 +19,7 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->load->library('jymengine');
-		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_username']);
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
 
 		if (!$this->jymengine->fetch_request_token()) {
 			$this->write->error("Akun YM anda terkunci, Mohon tunggu 1x24 Jam");
