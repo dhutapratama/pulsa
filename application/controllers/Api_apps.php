@@ -118,19 +118,25 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function get_main_data() {
-		$this->load->model(array('saldo', 'transactions', 'transaction_types'));
+		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types'));
 		$login_data			= $this->auth->login_key();
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
+		$member_data		= $this->members->get_by_id($login_data->member_id);
 
 		if ($transaction_data) {
 			$i = 0;
 			$transactions = array();
 			foreach ($transaction_data as $value) {
 				$transaction_type_data = $this->transaction_types->get_by_id($value->transaction_type_id);
+				$operators_data = $this->operators->get_by_id($value->operator_id);
+				$products_data = $this->products->get_by_id($value->product_id);
+
 				$transactions[$i]['type']		= $transaction_type_data->transaction_name;
 				$transactions[$i]['date']		= date('d M Y H:i', strtotime($value->date));
-				$transactions[$i]['status']		= $value->status;
+				$transactions[$i]['nomor']		= $value->nomor_hp;
+				$transactions[$i]['provider']	= $operators_data->nama;
+				$transactions[$i]['produk']		= $products_data->keterangan;
 				$transactions[$i]['amount']		= "Rp ".number_format($value->amount, 0, '', '.');
 				$transactions[$i]['balance']	= "Rp ".number_format($value->balance, 0, '', '.');
 				$i++;
@@ -139,10 +145,11 @@ class Api_apps extends CI_Controller {
 			$transactions = false;
 		}
 
-		$feedback['error'] 					= false;
-		$feedback['data']['saldo']			= "Rp ".number_format($saldo_data->amount, 0, '', '.');
-		$feedback['data']['transactions_data'] = $transactions ? true : false;
-		$feedback['data']['transactions'] 	= $transactions;
+		$feedback['error'] 						= false;
+		$feedback['data']['saldo']				= "Rp ".number_format($saldo_data->amount, 0, '', '.');
+		$feedback['data']['nama'] 				= $member_data->name;
+		$feedback['data']['transactions_data'] 	= $transactions ? true : false;
+		$feedback['data']['transactions'] 		= $transactions;
 
 		$this->write->feedback($feedback);
 	}
@@ -268,6 +275,8 @@ class Api_apps extends CI_Controller {
 		$transaction['date']				= date("Y-m-d H:i:s");
 		$transaction['balance']				= $saldo_data->amount;
 		$transaction['nomor_hp']			= $input['nomor'];
+		$transaction['operator_id']			= $operators_data->operator_id;
+		$transaction['product_id']			= $products_data->product_id;
 		$this->transactions->insert($transaction);
 
 		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
