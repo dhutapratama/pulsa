@@ -104,7 +104,8 @@ class Api_apps extends CI_Controller {
 			$saldo_id = $this->db->insert_id();
 		} else {
 			$member_id = $login_data->member_id;
-			$saldo_id = $login_data->saldo_id;
+			$saldo_data = $this->saldo->get_by_member_id($member_id);
+			$saldo_id = $saldo_data->saldo_id;
 		}
 		$this->auth->add_login_session($member_id, $saldo_id, serialize($signon_data), serialize($token_data));
     }
