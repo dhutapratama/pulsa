@@ -191,7 +191,7 @@ class Api_apps extends CI_Controller {
 
 		$prefix_data = $this->prefix->get_by_number($input['prefix']);
 		if (!$prefix_data) {
-			$this->write->error("Prefix nomor handphone salah");
+			$prefix_data->operator_id = 8;
 		}
 
 		$operators_data = $this->operators->get_by_id($prefix_data->operator_id);
