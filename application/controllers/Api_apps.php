@@ -270,7 +270,7 @@ class Api_apps extends CI_Controller {
 		$transaction['nomor_hp']			= $input['nomor'];
 		$this->transactions->insert($transaction);
 
-		$this->jymengine->send_message($this->ym_center, json_encode($input['kode'].'.'.$input['nomor'].'.'.$member_data->pin));
+		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
 
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Transaksi anda telah diproses";
