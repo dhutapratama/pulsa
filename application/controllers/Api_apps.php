@@ -52,7 +52,7 @@ class Api_apps extends CI_Controller {
 		// Berhasil masuk
 		$signon_data = $this->jymengine->get_signon();
 		$token_data = $this->jymengine->get_token();
-
+/*
 		// Kirim data pin
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 		sleep(3);
@@ -86,7 +86,7 @@ class Api_apps extends CI_Controller {
 		if ($no_reply) {
 			$this->write->error("YM Anda tidak terdaftar di server kami.");
 		}
-
+*/
 		if (!$is_member) {
 			$member['name']			= 'AyoIsiPulsa';
 			$member['ym_username']	= $input['ym_username'];

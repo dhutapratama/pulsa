@@ -73,8 +73,6 @@ class Jymengine
 		$url .= '&passwd='. $this->_config['password'];
 		$url .= '&oauth_consumer_key='. $this->_config['consumer_key'];		
 		$rs = $this->curl($url);
-
-		echo $url;
 		
 		if (stripos($rs, 'RequestToken') === false) return false;
 		$request_token = trim(str_replace('RequestToken=', '', $rs));
@@ -95,8 +93,6 @@ class Jymengine
 		$url .= '&oauth_token='. $this->_token['request'];
 		$url .= '&oauth_version=1.0';	
 		$rs = $this->curl($url);
-		
-		echo $url;
 
 		if (stripos($rs, 'oauth_token') === false) 
 		{
@@ -154,8 +150,6 @@ class Jymengine
 		$url .= '&oauth_version=1.0';	
 		$url .= '&notifyServerToken=1';
 		
-		echo $url;
-
 		//additional header
 		$header[] = 'Content-type: application/json; charset=utf-8';
 		$postdata = '{"presenceState" : '. $state. ', "presenceMessage" : "'. $status. '"}';
