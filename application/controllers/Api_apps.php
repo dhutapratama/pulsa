@@ -99,7 +99,7 @@ class Api_apps extends CI_Controller {
 
 			$saldo['member_id']		= $member_id;
 			$saldo['amount']		= 0;
-			$saldo['last_update']	= $date;
+			$saldo['last_update']	= date("Y-m-d H:i:s");
 			$this->saldo->insert($saldo);
 		} else {
 			$member_id = $login_data->member_id;
