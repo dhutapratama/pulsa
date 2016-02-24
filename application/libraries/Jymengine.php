@@ -538,7 +538,7 @@ class Jymengine
 		return $this->_token;
 	}
 
-	public function set_signon($token = array()) {
+	public function set_token($token = array()) {
 		$this->_token = $token;
 		return true;
 	}
