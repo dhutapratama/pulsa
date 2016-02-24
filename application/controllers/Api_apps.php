@@ -33,7 +33,7 @@ class Api_apps extends CI_Controller {
 
 		$seq = -1;
 		$looper = true;
-		while (true)
+		while ($looper)
 		{
 			$resp = $this->jymengine->fetch_long_notification($seq+1);
 			if (isset($resp))
