@@ -137,6 +137,7 @@ class Api_apps extends CI_Controller {
 				$transactions[$i]['nomor']		= $value->nomor_hp;
 				$transactions[$i]['provider']	= $operators_data->nama;
 				$transactions[$i]['produk']		= $products_data->keterangan;
+				$transactions[$i]['status']		= $value->status;
 				$transactions[$i]['amount']		= "Rp ".number_format($value->amount, 0, '', '.');
 				$transactions[$i]['balance']	= "Rp ".number_format($value->balance, 0, '', '.');
 				$i++;
