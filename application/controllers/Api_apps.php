@@ -228,7 +228,9 @@ class Api_apps extends CI_Controller {
 		$post_input = array('prefix' => 'required|numeric');
 		$input = $this->auth->input($post_input);
 
-		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
+		$member_data = $this->members->get_by_id($login_data->member_id);
+
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
 		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 
