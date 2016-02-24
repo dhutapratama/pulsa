@@ -220,6 +220,26 @@ class Api_apps extends CI_Controller {
 		$this->write->feedback($feedback);
 	}
 
+	public function pembelian() {
+		$this->load->model(array('products', 'operators', 'prefix'));
+		$this->load->library('jymengine');
+
+		$login_data	= $this->auth->login_key();
+		$post_input = array('prefix' => 'required|numeric');
+		$input = $this->auth->input($post_input);
+
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
+		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
+		$this->jymengine->set_token(unserialize($login_data->oauth_token));
+
+		$this->jymengine->send_message($this->ym_center, json_encode('KODE.NOHP.'.$input['pin']));
+
+		$feedback['error'] 					= false;
+		$feedback['data']['operator']		= "Transaksi di tracking";
+
+		$this->write->feedback($feedback);
+	}
+
 	public function konfirmasi_pembelian() {
 		$this->load->model(array('products', 'operators', 'prefix', 'transactions', 'saldo'));
 
