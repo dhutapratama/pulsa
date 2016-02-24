@@ -21,13 +21,13 @@ class Api_apps extends CI_Controller {
 		$this->load->library('jymengine');
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_username']);
 
-		if (!$engine->fetch_request_token()) {
+		if (!$this->jymengine->fetch_request_token()) {
 			$this->write->error("Akun YM anda terkunci, Mohon tunggu 1x24 Jam");
 		}
-		if (!$engine->fetch_access_token()) {
+		if (!$this->jymengine->fetch_access_token()) {
 			$this->write->error("Error Fetching Access Token");
 		}
-		if (!$engine->signon('AyoIsiPulsa')) {
+		if (!$this->jymengine->signon('AyoIsiPulsa')) {
 			$this->write->error("Tidak dapat masuk");
 		}
 
@@ -35,18 +35,15 @@ class Api_apps extends CI_Controller {
 		$looper = true;
 		while (true)
 		{
-			$resp = $engine->fetch_long_notification($seq+1);
+			$resp = $this->jymengine->fetch_long_notification($seq+1);
 			if (isset($resp))
 			{	
 				if ($resp === false) 
 				{		
-					if ($engine->get_error() != -10)
+					if ($this->jymengine->get_error() != -10)
 					{
-						if ($engine->debug) echo '> Fetching access token'. PHP_EOL;
-						if (!$engine->fetch_access_token()) die('Fetching access token failed');				
-						
-						if ($engine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
-						if (!$engine->signon(date('H:i:s'))) die('Signon failed');
+						if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
+						if (!$this->jymengine->signon('AyoIsiPulsa')) die('Signon failed');
 						
 						$seq = -1;
 					}
@@ -63,7 +60,7 @@ class Api_apps extends CI_Controller {
 						if ($key == 'message') //incoming message
 						{
 							$out = 'Your message is' . $val['msg'];
-							$engine->send_message($val['sender'], json_encode($out));
+							$this->jymengine->send_message($val['sender'], json_encode($out));
 
 							echo $out;
 							$looper = false;
