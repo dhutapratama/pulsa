@@ -31,46 +31,9 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Tidak dapat masuk");
 		}
 
-		$seq = -1;
-		$looper = true;
-		while ($looper)
-		{
-			$resp = $this->jymengine->fetch_long_notification($seq+1);
-			if (isset($resp))
-			{	
-				if ($resp === false) 
-				{		
-					if ($this->jymengine->get_error() != -10)
-					{
-						if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
-						if (!$this->jymengine->signon('AyoIsiPulsa')) die('Signon failed');
-						
-						$seq = -1;
-					}
-					continue;							
-				}
-				
-				
-				foreach ($resp as $row)
-				{
-					foreach ($row as $key=>$val)
-					{
-						if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
-						
-						if ($key == 'message') //incoming message
-						{
-							$out = 'Your message is' . $val['msg'];
-							$this->jymengine->send_message($val['sender'], json_encode($out));
-
-							echo $out;
-							$looper = false;
-						}
-					}
-				}
-			}	
-		}
-
-		$this->jymengine->signoff();
+		$this->jymengine->send_message('dutasms', json_encode("Azek, Azek"));
+		$this->jymengine->send_message('dutasms', json_encode("Azek, Busa"));
+		$this->jymengine->send_message('dutasms', json_encode("Sekali, Azek"));
     }
 
     public function registrasi() {
