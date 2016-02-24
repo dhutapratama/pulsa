@@ -302,6 +302,7 @@ class Api_apps extends CI_Controller {
 
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Berhasil";
+		$this->write->feedback($feedback);
 	}
 
 	public function save_pin() {
@@ -316,5 +317,6 @@ class Api_apps extends CI_Controller {
 
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Berhasil";
+		$this->write->feedback($feedback);
 	}
 }
