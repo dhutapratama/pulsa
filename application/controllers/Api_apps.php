@@ -191,7 +191,8 @@ class Api_apps extends CI_Controller {
 
 		$prefix_data = $this->prefix->get_by_number($input['prefix']);
 		if (!$prefix_data) {
-			$prefix_data->operator_id = 8;
+			$prefix_data = array('operator_id' => 8);
+			$prefix_data = (object)$prefix_data;
 		}
 
 		$operators_data = $this->operators->get_by_id($prefix_data->operator_id);
