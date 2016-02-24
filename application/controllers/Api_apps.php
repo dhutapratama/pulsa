@@ -65,7 +65,7 @@ class Api_apps extends CI_Controller {
 			{
 				foreach ($row as $key => $val)
 				{
-					else if ($key == 'message') //incoming message
+					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $ym_center) {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
