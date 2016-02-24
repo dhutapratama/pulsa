@@ -3,8 +3,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Api_apps extends CI_Controller {
 
-	private $consumer_key 	= 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
-	private $secret_key 	= '15e488b278f236337dd4fb133d8611b4c7384331';
+	private $consumer_key 	= 'dj0yJmk9d0FYSVVkWFdQdUlUJmQ9WVdrOVZ6VlJkMmcyTXpZbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1mYQ--';
+	private $secret_key 	= '42ee4f37b4e7edf66c10611c6cd8a90affb0d15c';
 
 	public function __construct() {
         parent::__construct();
@@ -19,88 +19,59 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->load->library('jymengine');
-
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_username']);
 
-		$i = 0;
-		$success = false;
-		while ($i <= 3) {
-			$i++;
-
-			if (!$this->jymengine->fetch_request_token()) {
-				continue;
-			}
-			if (!$this->jymengine->fetch_access_token()) {
-				continue;
-			}
-			if (!$this->jymengine->signon('PULSAPPS')){
-				continue;
-			}
-
-			// All signin step passed
-			$success = true;
-			break;
+		if (!$engine->fetch_request_token()) {
+			$this->write->error("Akun YM anda terkunci, Mohon tunggu 1x24 Jam");
+		}
+		if (!$engine->fetch_access_token()) {
+			$this->write->error("Error Fetching Access Token");
+		}
+		if (!$engine->signon('AyoIsiPulsa')) {
+			$this->write->error("Tidak dapat masuk");
 		}
 
-		if ($success) {
-			$out		= "S.".$input['pin'];
-			$trx_ym_id	= 'dutasms';
-			$get_content = false;
-
-			if ($this->jymengine->send_message($trx_ym_id, json_encode($out))) {
-				$i = 0;
-				$get_content = false;
-				while (true) {
-					$seq = -1;
-					$resp = $this->jymengine->fetch_long_notification($seq+1);
-					if ($resp === false) 
-					{		
-						if ($engine->get_error() != -10)
-						{
-							if ($engine->debug) echo '> Fetching access token'. PHP_EOL;
-							if (!$engine->fetch_access_token()) die('Fetching access token failed');				
-							
-							if ($engine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
-							if (!$engine->signon(date('H:i:s'))) die('Signon failed');
-							
-							$seq = -1;
-						}
-						continue;							
-					}
-					break;
-				}
-				print_r($resp); // additional
-				$get_content = true;
-			} else {
-				echo "You can't send message";
-			}
-		} else {
-			// not success get data
-			// maybe wrong username / password
-			echo "Please check username / password";
-		}
-
-		if ($get_content) {
-			// YM Get Data
-			foreach ($resp as $row)
-			{
-				foreach ($row as $key => $val)
-				{
-					if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
-					
-					else if ($key == 'message') //incoming message
+		$seq = -1;
+		$looper = true;
+		while (true)
+		{
+			$resp = $engine->fetch_long_notification($seq+1);
+			if (isset($resp))
+			{	
+				if ($resp === false) 
+				{		
+					if ($engine->get_error() != -10)
 					{
-						if ($sender == $trx_ym_id) {
-							
-							echo $val['msg'];
+						if ($engine->debug) echo '> Fetching access token'. PHP_EOL;
+						if (!$engine->fetch_access_token()) die('Fetching access token failed');				
+						
+						if ($engine->debug) echo '> Signon as: '. USERNAME. PHP_EOL;
+						if (!$engine->signon(date('H:i:s'))) die('Signon failed');
+						
+						$seq = -1;
+					}
+					continue;							
+				}
+				
+				
+				foreach ($resp as $row)
+				{
+					foreach ($row as $key=>$val)
+					{
+						if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
+						
+						if ($key == 'message') //incoming message
+						{
+							$out = 'Your message is' . $val['msg'];
+							$engine->send_message($val['sender'], json_encode($out));
+
+							echo $out;
+							$looper = false;
 						}
 					}
 				}
-			}
-		} else {
-			echo "Please try again";
+			}	
 		}
-			
     }
 
     public function registrasi() {
