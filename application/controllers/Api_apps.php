@@ -5,7 +5,7 @@ class Api_apps extends CI_Controller {
 
 	private $consumer_key 	= 'dj0yJmk9VXpraU05Tko3NGNpJmQ9WVdrOWVUaE5Tbmw0TTJNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1kNg--';
 	private $secret_key 	= '13b7d68db3f35f230363fdc9ae14d6aad5d3db5a';
-	private $ym_center		= 'dutasms';
+	private $ym_center		= 'misterh2h';
 
 	public function __construct() {
         parent::__construct();
