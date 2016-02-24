@@ -25,9 +25,7 @@ class Transactions extends CI_Model {
 
 	public function get()
 	{
-		$query = $this->db->get('apps_transactions')
-			->order_by('transaction_id', 'desc')
-			->limit(0, 30);
+		$query = $this->db->get('apps_transactions');
 		return $query->result();
 	}
 
@@ -55,6 +53,8 @@ class Transactions extends CI_Model {
 	{
 		$query = $this->db->select('*')->from('apps_transactions')
 				->where('member_id', $member_id)
+				->order_by('transaction_id', 'desc')
+				->limit(0, 30);
 				->get();
 		return $query->result();
 	}
