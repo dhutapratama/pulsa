@@ -59,6 +59,7 @@ class Api_apps extends CI_Controller {
 		// Cek PIN
 		$looper = true;
 		$no_reply = false;
+		$get_trx_reply = 0;
 		while ($looper) {
 			foreach ($resp as $row)
 			{
@@ -77,6 +78,8 @@ class Api_apps extends CI_Controller {
 					}
 				}
 			}
+
+			$get_trx_reply++;
 			if ($get_trx_reply == 3) {
 				$looper = false;
 				$no_reply = true;
