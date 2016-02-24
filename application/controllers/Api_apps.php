@@ -234,7 +234,7 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 
-		$this->jymengine->send_message($this->ym_center, json_encode('KODE.NOHP.'.$input['pin']));
+		$this->jymengine->send_message($this->ym_center, json_encode('KODE.NOHP.'.$member_data->pin));
 
 		$feedback['error'] 					= false;
 		$feedback['data']['operator']		= "Transaksi di tracking";
