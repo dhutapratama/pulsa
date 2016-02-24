@@ -55,12 +55,12 @@ class Api_apps extends CI_Controller {
 
 		// Kirim data pin
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
+		sleep(3);
 
 		// Cek PIN
-		$looper = true;
 		$no_reply = false;
-		$get_trx_reply = 0;
-		while ($looper) {
+		if (isset($resp))
+		{	
 			$resp = $this->jymengine->fetch_long_notification($seq+1);
 			foreach ($resp as $row)
 			{
@@ -74,19 +74,15 @@ class Api_apps extends CI_Controller {
 							} else {
 								//$saldo = 
 							}
-							$looper = false;
 						}
 					}
 				}
 			}
-
-			$get_trx_reply++;
-			if ($get_trx_reply == 3) {
-				$looper = false;
-				$no_reply = true;
-			}
+		} else {
+			$no_reply = true;
 		}
 
+		
 		if ($no_reply) {
 			$this->write->error("YM Anda tidak terdaftar di server kami.");
 		}
