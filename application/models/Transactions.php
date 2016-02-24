@@ -8,6 +8,7 @@ $transaction['status']
 $transaction['amount']
 $transaction['date']
 $transaction['balance']
+$transaction['nomor_hp']
 */
 
 class Transactions extends CI_Model {

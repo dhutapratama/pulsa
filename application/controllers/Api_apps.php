@@ -225,33 +225,11 @@ class Api_apps extends CI_Controller {
 		$this->load->library('jymengine');
 
 		$login_data	= $this->auth->login_key();
-		$post_input = array('prefix' => 'required|numeric');
-		$input = $this->auth->input($post_input);
-
-		$member_data = $this->members->get_by_id($login_data->member_id);
-
-		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
-		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
-		$this->jymengine->set_token(unserialize($login_data->oauth_token));
-
-		$this->jymengine->send_message($this->ym_center, json_encode('KODE.NOHP.'.$member_data->pin));
-
-		$feedback['error'] 					= false;
-		$feedback['data']['operator']		= "Transaksi di tracking";
-
-		$this->write->feedback($feedback);
-	}
-
-	public function konfirmasi_pembelian() {
-		$this->load->model(array('products', 'operators', 'prefix', 'transactions', 'saldo'));
-
-		$login_data	= $this->auth->login_key();
 		$post_input = array('nomor' => 'required|numeric', 'kode_sms' => 'required');
 		$input = $this->auth->input($post_input);
 
 		$prefix_3 = substr($input['nomor'], 0, 3);
 		$prefix_4 = substr($input['nomor'], 0, 4);
-
 
 		$prefix_data = $this->prefix->get_by_number($prefix_4);
 		if (!$prefix_data) {
@@ -271,7 +249,10 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Nomor, Operator dan Kode tidak sama");
 		}
 
-		// Proses transaksi
+		$member_data = $this->members->get_by_id($login_data->member_id);
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
+		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
+		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 
 		$randomizer = rand(0,2);
 		$status[0] = "Pending";
@@ -282,15 +263,19 @@ class Api_apps extends CI_Controller {
 		//$transaction['transaction_id']		= md5(time().rand(1000, 9999));
 		$transaction['member_id']			= $login_data->member_id;
 		$transaction['transaction_type_id']	= 2;
-		$transaction['status']				= $status[$randomizer];
+		$transaction['status']				= 'Terkirim';
 		$transaction['amount']				= $products_data->harga;
 		$transaction['date']				= date("Y-m-d H:i:s");
 		$transaction['balance']				= $saldo_data->amount;
+		$transaction['nomor_hp']			= $input['nomor'];
 		$this->transactions->insert($transaction);
 
-		$feedback['error'] 				= false;
-		$feedback['data']['message']	= "Transaksi ".$status[$randomizer];
+		$this->jymengine->send_message($this->ym_center, json_encode($input['kode']'.'.$input['nomor'].'.'.$member_data->pin));
+
+		$feedback['error'] 					= false;
+		$feedback['data']['message']		= "Transaksi anda telah diproses";
 		$feedback['data']['refference']	= "TRX : ".md5(time());
+
 		$this->write->feedback($feedback);
 	}
 }
