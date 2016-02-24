@@ -221,7 +221,7 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function pembelian() {
-		$this->load->model(array('members', 'saldo', 'transactions', 'prefix'));
+		$this->load->model(array('members', 'saldo', 'transactions', 'prefix', 'operators', 'products'));
 		$this->load->library('jymengine');
 
 		$login_data	= $this->auth->login_key();
