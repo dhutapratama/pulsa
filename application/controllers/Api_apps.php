@@ -22,7 +22,7 @@ class Api_apps extends CI_Controller {
 		$this->load->model(array('members', 'saldo'));
 		$member_data = $this->members->get_by_ym_username($input['ym_username']);
 		if ($member_data) {
-			$login_data = $this->members->get_by_login($input['ym_username'], $input['ym_password'], $input['pin']);
+			$login_data = $this->members->get_by_ym_login($input['ym_username'], $input['ym_password'], $input['pin']);
 			if (!$login_data) {
 				$this->write->error("YM Password / PIN anda salah");
 			}
