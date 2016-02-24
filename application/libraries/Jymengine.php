@@ -155,7 +155,7 @@ class Jymengine
 		$url .= '&notifyServerToken=1';
 		
 		echo $url;
-		
+
 		//additional header
 		$header[] = 'Content-type: application/json; charset=utf-8';
 		$postdata = '{"presenceState" : '. $state. ', "presenceMessage" : "'. $status. '"}';
@@ -525,6 +525,23 @@ class Jymengine
 		return $this->_error;
 	}
 
+	public function get_signon() {
+		return $this->_ym;
+	}
+
+	public function set_signon($signon = array()) {
+		$this->_ym = $signon;
+		return true;
+	}
+
+	public function get_token() {
+		return $this->_token;
+	}
+
+	public function set_signon($token = array()) {
+		$this->_token = $token;
+		return true;
+	}
 }
 
 ?>

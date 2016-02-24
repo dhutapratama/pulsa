@@ -5,6 +5,7 @@ class Api_apps extends CI_Controller {
 
 	private $consumer_key 	= 'dj0yJmk9VXpraU05Tko3NGNpJmQ9WVdrOWVUaE5Tbmw0TTJNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1kNg--';
 	private $secret_key 	= '13b7d68db3f35f230363fdc9ae14d6aad5d3db5a';
+	private $ym_center		= 'mister2h2';
 
 	public function __construct() {
         parent::__construct();
@@ -14,7 +15,24 @@ class Api_apps extends CI_Controller {
         }
     }
 
-    public function handshake() {
+    public function login() {
+    	$param = array('ym_username' => 'required', 'ym_password' => 'required', 'pin' => 'required');
+		$input = $this->auth->input($param);
+
+		$this->load->model(array('members', 'saldo'));
+		$member_data = $this->member->get_by_username($input['ym_username']);
+		if ($member_data) {
+			$login_data = $this->member->get_by_login($input['ym_username'], $input['ym_password'], $input['pin']);
+			if (!$login_data) {
+				$this->write->error("YM Password / PIN anda salah");
+			}
+			$this->_cek_id_ym(true, $login_data);
+		} else {
+			$this->_cek_id_ym(false);
+		}
+    }
+
+    private function _cek_id_ym($is_member = false, $login_data = array()) {
     	$param = array('ym_username' => 'required', 'ym_password' => 'required', 'pin' => 'required');
 		$input = $this->auth->input($param);
 
@@ -25,82 +43,70 @@ class Api_apps extends CI_Controller {
 			$this->write->error("Akun YM anda terkunci, Mohon tunggu 1x24 Jam");
 		}
 		if (!$this->jymengine->fetch_access_token()) {
-			$this->write->error("Error Fetching Access Token");
+			$this->write->error("Server error silahkan coba beberapa saat lagi");
 		}
 		if (!$this->jymengine->signon('AyoIsiPulsa')) {
 			$this->write->error("Tidak dapat masuk");
 		}
+		
+		// Berhasil masuk
+		$signon_data = $this->jymengine->get_signon();
+		$token_data = $this->jymengine->get_token();
 
-		$this->jymengine->send_message('dutasms', json_encode("Azek, Azek"));
-		$this->jymengine->send_message('dutasms', json_encode("Azek, Busa"));
-		$this->jymengine->send_message('dutasms', json_encode("Sekali, Azek"));
-    }
+		// Kirim data pin
+		$this->jymengine->send_message($ym_center, json_encode('S.'.$input['pin']));
 
-    public function registrasi() {
-    	$this->load->model(array('members', 'saldo'));
+		// Cek PIN
+		$looper = true;
+		$no_reply = false;
+		while ($looper) {
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					else if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $ym_center) {
+							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
+								$this->write->error("Pin anda salah");
+							} else {
+								//$saldo = 
+							}
+							$looper = false;
+						}
+					}
+				}
+			}
+			if ($get_trx_reply == 3) {
+				$looper = false;
+				$no_reply = true;
+			}
+		}
 
-		$param = array('device_id' => 'required');
-		$input = $this->auth->input($param);
+		if ($no_reply) {
+			$this->write->error("YM Anda tidak terdaftar di server kami.");
+		}
 
-		$member_data = $this->members->get_by_device_id($input['device_id']);
-		if (!$member_data) {
-			// Create new membership
-			$date = date('Y-m-d H:i:s');
-			$member['name']					= $input['name'];
-			$member['email']				= $input['email'];
-			$member['password']				= $input['password'];
-			$member['phone']				= $input['phone'];
-			$member['last_update']			= $date;
-			$member['pin']					= '';
-
-
-			$member['device_id']			= $input['device_id'];
-			$member['is_email_verified']	= '';
-			$member['is_phone_verified']	= '';
-			$this->members->insert($member);
+		if (!$is_member) {
+			$member['name']			= 'AyoIsiPulsa';
+			$member['ym_username']	= $input['ym_username'];
+			$member['ym_password']	= $input['ym_password'];
+			$member['handphone']	= '081';
+			$member['pin']			= $input['pin'];
+			$member['last_update']	= date("Y-m-d H:i:s");
+			$this->members->input($member);
 			$member_id = $this->db->insert_id();
 
 			$saldo['member_id']		= $member_id;
 			$saldo['amount']		= 0;
 			$saldo['last_update']	= $date;
 			$this->saldo->insert($saldo);
-			$saldo_id = $this->db->insert_id();
-
-			$this->auth->add_login_session($member_id, $saldo_id, $input['device_id']);
+		} else {
+			$member_id = $login_data->member_id;
+			$saldo_id = $login_data->saldo_id;
 		}
-		$saldo_data = $this->saldo->get_by_member_id($member_data->member_id);
-		$this->auth->add_login_session($member_data->member_id, $saldo_data->saldo_id, $input['device_id']);
+		$this->auth->add_login_session($member_id, $saldo_id, serialize($signon_data), serialize($token_data));
     }
-
-	public function get_login_key() {
-		$this->load->model(array('members', 'saldo'));
-
-		$param = array('device_id' => 'required');
-		$input = $this->auth->input($param);
-
-		$member_data = $this->members->get_by_device_id($input['device_id']);
-		if (!$member_data) {
-			// Create new membership
-			$date = date('Y-m-d H:i:s');
-
-			$member['device_id']			= $input['device_id'];
-			$member['is_email_verified']	= '0';
-			$member['is_phone_verified']	= '0';
-			$member['last_update']			= $date;
-			$this->members->insert($member);
-			$member_id = $this->db->insert_id();
-
-			$saldo['member_id']		= $member_id;
-			$saldo['amount']		= 0;
-			$saldo['last_update']	= $date;
-			$this->saldo->insert($saldo);
-			$saldo_id = $this->db->insert_id();
-
-			$this->auth->add_login_session($member_id, $saldo_id, $input['device_id']);
-		}
-		$saldo_data = $this->saldo->get_by_member_id($member_data->member_id);
-		$this->auth->add_login_session($member_data->member_id, $saldo_data->saldo_id, $input['device_id']);
-	}
 
 	public function check_login_key() {
 		$this->load->model(array('login_sessions'));
@@ -262,55 +268,5 @@ class Api_apps extends CI_Controller {
 		$feedback['data']['message']	= "Transaksi ".$status[$randomizer];
 		$feedback['data']['refference']	= "TRX : ".md5(time());
 		$this->write->feedback($feedback);
-	}
-
-	public function yahoo_messenger() {
-		$this->load->library('jymengine');
-
-		$ym_username = 'dutasms';
-		$ym_password = '169753';
-		$consumer_key = 'dj0yJmk9cm5iUVliUkhEVmFMJmQ9WVdrOU4wOVFlREJXTkhNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1iOA--';
-		$secret_key = '15e488b278f236337dd4fb133d8611b4c7384331';
-
-		$this->jymengine->initialize($consumer_key, $secret_key, $ym_username, $ym_password);
-
-		if (!$this->jymengine->fetch_request_token()) die('Fetching request token failed');
-		if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
-		if (!$this->jymengine->signon('I am login from PHP code')) die('Signon failed');
-
-		$seq = -1;
-		$resp = $this->jymengine->fetch_long_notification($seq+1);
-
-		if (isset($resp))
-		{	
-			if ($resp === false) 
-			{		
-				if ($this->jymengine->get_error() != -10)
-				{
-					if (!$this->jymengine->fetch_access_token()) die('Fetching access token failed');
-					if (!$this->jymengine->signon(date('H:i:s'))) die('Signon failed');
-					
-					$seq = -1;
-				}				
-			}
-			
-			
-			foreach ($resp as $row)
-			{
-				foreach ($row as $key => $val)
-				{
-					if ($val['sequence'] > $seq) $seq = intval($val['sequence']);
-					
-					else if ($key == 'message') //incoming message
-					{						
-						$val['sender']	= 'misterh2h';
-						$val['msg']		= '';
-						$this->jymengine->send_message($val['sender'], json_encode($out));
-					}
-				}
-			}
-
-			print_r($resp);
-		}
 	}
 }

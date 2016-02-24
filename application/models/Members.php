@@ -47,4 +47,22 @@ class Members extends CI_Model {
 		$this->db->where('member_id', $id);
 		$this->db->update('apps_members', $data);
 	}
+
+	public function get_by_ym_login($ym_username = '', $ym_password = '', $pin = '')
+	{
+		$query = $this->db->select('*')->from('apps_members')
+				->where('ym_username', $ym_username)
+				->where('ym_password', $ym_password)
+				->where('pin', $pin)
+				->get();
+		return $query->row();
+	}
+
+	public function get_by_ym_username($ym_username = '')
+	{
+		$query = $this->db->select('*')->from('apps_members')
+				->where('ym_username', $ym_username)
+				->get();
+		return $query->row();
+	}
 }
