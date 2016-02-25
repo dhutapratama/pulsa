@@ -5,6 +5,7 @@ $message['message_id']
 $message['member_id']
 $message['message']
 $message['date']
+$message['is_read']
 */
 
 class Messages extends CI_Model {
