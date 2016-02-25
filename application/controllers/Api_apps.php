@@ -611,12 +611,12 @@ class Api_apps extends CI_Controller {
 		$param = array('info' => 'required');
 		$input = $this->auth->input($param);
 
-		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].'.'.$member_data->pin));
+		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
 		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].'.'.$member_data->pin));
+			$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
 			sleep(3);
 
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
