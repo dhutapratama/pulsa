@@ -148,7 +148,8 @@ class Api_apps extends CI_Controller {
 		sleep(3);
 
 		$seq = $login_data->ym_sequence;
-		while (true) {
+		$i = 1;
+		while ($i <= 3) {
 			$resp = $this->jymengine->fetch_long_notification($seq);
 			if ($resp === false) 
 			{		
@@ -165,6 +166,8 @@ class Api_apps extends CI_Controller {
 			} else {
 				break;
 			}
+
+			$i++;
 		}
 
 		$no_reply = false;
