@@ -432,4 +432,108 @@ class Api_apps extends CI_Controller {
 
 		$this->write->feedback($feedback);
 	}
+
+	public function get_info() {
+		$login_data	= $this->auth->login_key();
+
+		$this->load->library('jymengine');
+		$this->load->model(array('messages', 'login_sessions'));
+
+		$this->_init_ym($login_data);
+
+		$this->jymengine->send_message($this->ym_center, json_encode('OLAPP'));
+		sleep(3);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('OLAPP'));
+			sleep(3);
+
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+			}
+		}
+
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							$this->load->model(array('messages'));
+							$message['member_id']	= $login_data->member_id;
+							$message['message']		= $val['msg'];
+							$message['date']		= date('Y-m-d H:i:s');
+							$message['is_read']		= 1;
+							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'OL:') !== false){
+								$olapp = str_replace("OL:", "", $val['msg']);
+							}
+
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
+		// OLAP2
+		$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
+		sleep(3);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
+			sleep(3);
+
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+			}
+		}
+					
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							$this->load->model(array('messages'));
+							$message['member_id']	= $login_data->member_id;
+							$message['message']		= $val['msg'];
+							$message['date']		= date('Y-m-d H:i:s');
+							$message['is_read']		= 1;
+							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'OP:') !== false){
+								$olap2 = str_replace("OP:", "", $val['msg']);
+							}
+
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
+		$feedback['error'] 				= false;
+		$feedback['data']['olapp']		= $olapp;
+		$feedback['data']['olap2']		= $olap2;
+
+		$this->write->feedback($feedback);
+	}
 }
