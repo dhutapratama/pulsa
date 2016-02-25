@@ -70,9 +70,21 @@ class Api_apps extends CI_Controller {
 					{
 						if ($val['sender'] == $this->ym_center) {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
-								$this->write->error("Pin anda salah");
+								$this->write->error("PIN Anda Salah");
 							} else {
-								$this->write->error($val['msg']);
+								if ($is_member) {
+									// Update
+									$member['pin'] = $input['pin'];
+									$this->members->update($login_data->member_id, $member);
+									$login_data = $this->members->get_by_id($login_data->member_id);
+
+									$this->load->model(array('messages'));
+									$message['member_id']	= $login_data->member_id;
+									$message['message']		= $val['msg'];
+									$message['date']		= date('Y-m-d H:i:s');
+									$message['is_read']		= 1;
+									$this->messages->insert($message);
+								}
 							}
 						}
 					}
@@ -82,7 +94,6 @@ class Api_apps extends CI_Controller {
 			$no_reply = true;
 		}
 
-		
 		if ($no_reply) {
 			$this->write->error("YM Anda tidak terdaftar di server kami.");
 		}
