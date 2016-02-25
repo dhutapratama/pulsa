@@ -141,9 +141,10 @@ class Api_apps extends CI_Controller {
 		$this->load->library('jymengine');
 		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products', 'messages'));
 		$login_data			= $this->auth->login_key();
+		$member_data		= $this->members->get_by_id($login_data->member_id);
 
 		$this->_init_ym($login_data);
-		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
+		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
 		sleep(3);
 
 		$resp = $this->jymengine->fetch_long_notification(1);
@@ -192,7 +193,6 @@ class Api_apps extends CI_Controller {
 
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
-		$member_data		= $this->members->get_by_id($login_data->member_id);
 
 		if ($transaction_data) {
 			$i = 0;
