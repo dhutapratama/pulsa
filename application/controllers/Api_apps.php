@@ -84,15 +84,6 @@ class Api_apps extends CI_Controller {
 									$message['date']		= date('Y-m-d H:i:s');
 									$message['is_read']		= 1;
 									$this->messages->insert($message);
-
-									$arr_message = explode(",", $val['msg']);
-									$arr_message = explode("Rp.", $arr_message[0]);
-									$saldo = str_replace(".", "", $arr_message[1]);
-									$saldo = str_replace(",", "", $saldo);
-
-									$saldo_update['amount']		= $saldo;
-									$saldo_update['last_update']	= date('Y-m-d H:i:s');
-									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
 								}
 							}
 						}
