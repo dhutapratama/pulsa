@@ -139,7 +139,7 @@ class Api_apps extends CI_Controller {
 
 	public function get_main_data() {
 		$this->load->library('jymengine');
-		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products', 'messages'));
+		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products', 'messages', 'login_sessions'));
 		$login_data			= $this->auth->login_key();
 		$member_data		= $this->members->get_by_id($login_data->member_id);
 
@@ -147,8 +147,8 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
 		sleep(3);
 
-		$resp = $this->jymengine->fetch_long_notification(1);
-print_r($resp);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
 		$no_reply = false;
 		if (isset($resp))
 		{	
@@ -177,6 +177,9 @@ print_r($resp);
 								$saldo_update['amount']			= $saldo;
 								$saldo_update['last_update']	= date('Y-m-d H:i:s');
 								$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
+
+								$login_session['ym_sequence']	= $val['sequence'] + 1; 
+								$this->login_sessions->update($login_data->login_session_id, $login_session);
 							}
 						}
 					}
