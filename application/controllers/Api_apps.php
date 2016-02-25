@@ -100,9 +100,9 @@ class Api_apps extends CI_Controller {
 
 									echo $saldo " ---- ";
 
-									$saldo['amount']		= $saldo;
-									$saldo['last_update']	= date('Y-m-d H:i:s');
-									$this->saldo->update_by_member_id($login_data->member_id, $saldo);
+									$saldo_update['amount']		= $saldo;
+									$saldo_update['last_update']	= date('Y-m-d H:i:s');
+									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
 								}
 							}
 						}
