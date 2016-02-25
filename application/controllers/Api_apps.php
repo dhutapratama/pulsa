@@ -582,7 +582,7 @@ class Api_apps extends CI_Controller {
 							$this->messages->insert($message);
 
 							if (stripos($val['msg'], 'A/N') !== false){
-								$olapp = $val['msg'];
+								$tiket = $val['msg'];
 							}
 
 							$login_session['ym_sequence']	= $val['sequence']; 
