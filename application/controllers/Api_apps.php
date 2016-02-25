@@ -147,7 +147,25 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
 		sleep(3);
 
-			$resp = $this->jymengine->fetch_long_notification(1);
+		$seq = $login_data->ym_sequence;
+		while (true) {
+			$resp = $this->jymengine->fetch_long_notification($seq);
+			if ($resp === false) 
+			{		
+				if ($engine->get_error() != -10)
+				{
+					$this->jymengine->fetch_access_token();				
+					$this->jymengine->signon("AyoIsiPulsa");
+					$seq = 1;
+
+					$signon_data = $this->jymengine->get_signon();
+					$token_data = $this->jymengine->get_token();
+					$this->auth->update_login_session($login_session_id, serialize($token_data), serialize($signon_data));
+				}							
+			} else {
+				break;
+			}
+		}
 
 		$no_reply = false;
 		if (isset($resp))

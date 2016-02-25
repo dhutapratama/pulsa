@@ -35,6 +35,15 @@ class Auth {
 		$CI->write->feedback($feedback);
 	}
 
+	function update_login_session($login_session_id, $oauth_token, $oauth_session) {
+		$CI =& get_instance();
+        $CI->load->model('login_sessions');
+		$login_session['date']		= date('Y-m-d H:i:s');
+		$login_session['oauth_token']	= $oauth_token;
+		$login_session['oauth_session']	= $oauth_session;
+		$CI->login_sessions->update($login_session_id, $login_session);
+	}
+
 	function input($input = array()) {
 		$CI =& get_instance();
 		$CI->load->library('form_validation');
