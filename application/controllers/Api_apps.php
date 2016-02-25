@@ -160,7 +160,7 @@ class Api_apps extends CI_Controller {
 
 					$signon_data = $this->jymengine->get_signon();
 					$token_data = $this->jymengine->get_token();
-					$this->auth->update_login_session($login_session_id, serialize($token_data), serialize($signon_data));
+					$this->auth->update_login_session($login_data->login_session_id, serialize($token_data), serialize($signon_data));
 				}							
 			} else {
 				break;
