@@ -45,4 +45,14 @@ class Messages extends CI_Model {
 		$this->db->where('message_id', $id);
 		$this->db->update('apps_messages', $data);
 	}
+
+	public function get_latest($member_id = '')
+	{
+		$query = $this->db->select('*')->from('apps_messages')
+				->where('member_id', $member_id)
+				->order_by('message_id', 'desc')
+				->limit(10)
+				->get();
+		return $query->row();
+	}
 }
