@@ -53,6 +53,6 @@ class Messages extends CI_Model {
 				->order_by('message_id', 'desc')
 				->limit(10)
 				->get();
-		return $query->row();
+		return $query->result();
 	}
 }
