@@ -52,16 +52,15 @@ class Api_apps extends CI_Controller {
 		// Berhasil masuk
 		$signon_data = $this->jymengine->get_signon();
 		$token_data = $this->jymengine->get_token();
-/*
-		// Kirim data pin
+
+		// Kirim Cek Saldo
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 		sleep(3);
 
-		// Cek PIN
+		$resp = $this->jymengine->fetch_long_notification($seq+1);
 		$no_reply = false;
 		if (isset($resp))
 		{	
-			$resp = $this->jymengine->fetch_long_notification($seq+1);
 			foreach ($resp as $row)
 			{
 				foreach ($row as $key => $val)
@@ -72,7 +71,7 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
 								$this->write->error("Pin anda salah");
 							} else {
-								//$saldo = 
+								$this->write->error($val['msg']);
 							}
 						}
 					}
@@ -86,7 +85,7 @@ class Api_apps extends CI_Controller {
 		if ($no_reply) {
 			$this->write->error("YM Anda tidak terdaftar di server kami.");
 		}
-*/
+
 		if (!$is_member) {
 			$member['name']			= 'AyoIsiPulsa';
 			$member['ym_username']	= $input['ym_username'];
