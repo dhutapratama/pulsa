@@ -89,7 +89,7 @@ class Api_apps extends CI_Controller {
 									$arr_message = explode("Rp.", $arr_message[0]);
 									$saldo = str_replace(".", "", $arr_message[1]);
 									$saldo = str_replace(",", "", $saldo);
-									
+
 									$saldo_update['amount']		= $saldo;
 									$saldo_update['last_update']	= date('Y-m-d H:i:s');
 									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
@@ -138,8 +138,58 @@ class Api_apps extends CI_Controller {
 	}
 
 	public function get_main_data() {
-		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products'));
+		$this->load->library('jymengine');
+		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products', 'messages'));
 		$login_data			= $this->auth->login_key();
+
+		$this->_init_ym($login_data);
+		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
+		sleep(3);
+
+		$resp = $this->jymengine->fetch_long_notification(1);
+
+		$no_reply = false;
+		if (isset($resp))
+		{	
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') !== false){
+								// PIN SALAH
+							} else {
+								if ($is_member) {
+									// Update
+									$member['pin'] = $input['pin'];
+									$this->members->update($login_data->member_id, $member);
+									$login_data = $this->members->get_by_id($login_data->member_id);
+
+									$this->load->model(array('messages'));
+									$message['member_id']	= $login_data->member_id;
+									$message['message']		= $val['msg'];
+									$message['date']		= date('Y-m-d H:i:s');
+									$message['is_read']		= 1;
+									$this->messages->insert($message);
+
+									$arr_message = explode(",", $val['msg']);
+									$arr_message = explode("Rp.", $arr_message[0]);
+									$saldo = str_replace(".", "", $arr_message[1]);
+									$saldo = str_replace(",", "", $saldo);
+
+									$saldo_update['amount']			= $saldo;
+									$saldo_update['last_update']	= date('Y-m-d H:i:s');
+									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
 		$member_data		= $this->members->get_by_id($login_data->member_id);
@@ -338,5 +388,13 @@ class Api_apps extends CI_Controller {
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Berhasil";
 		$this->write->feedback($feedback);
+	}
+
+	private function init_ym($login_data) {
+		$this->load->model('members');
+		$member_data = $this->members->get_by_id($login_data->member_id);
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
+		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
+		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 	}
 }
