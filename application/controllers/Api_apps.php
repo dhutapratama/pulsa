@@ -68,7 +68,7 @@ class Api_apps extends CI_Controller {
 				{
 					if ($key == 'message') //incoming message
 					{
-						if ($val['sender'] == $ym_center) {
+						if ($val['sender'] == $this->ym_center) {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
 								$this->write->error("Pin anda salah");
 							} else {
