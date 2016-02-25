@@ -24,7 +24,7 @@ class Api_apps extends CI_Controller {
 		if ($member_data) {
 			$login_data = $this->members->get_by_ym_login($input['ym_username'], $input['ym_password']);
 			if (!$login_data) {
-				$this->write->error("YM Password / PIN anda salah");
+				$this->write->error("Password anda salah");
 			}
 			$this->_cek_id_ym(true, $login_data);
 		} else {
@@ -69,7 +69,7 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
-							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') === false){
+							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') !== false){
 								$this->write->error("PIN Anda Salah");
 							} else {
 								if ($is_member) {
@@ -84,6 +84,15 @@ class Api_apps extends CI_Controller {
 									$message['date']		= date('Y-m-d H:i:s');
 									$message['is_read']		= 1;
 									$this->messages->insert($message);
+
+									$arr_message = explode(",", $val['msg']);
+									$arr_message = explode("Rp.", $arr_message[0]);
+									$saldo = str_replace(".", "", $arr_message[1]);
+									$saldo = str_replace(",", "", $saldo);
+
+									$saldo['amount']		= $saldo;
+									$saldo['last_update']	= date('Y-m-d H:i:s');
+									$this->saldo->update_by_member_id($login_data->member_id, $saldo);
 								}
 							}
 						}

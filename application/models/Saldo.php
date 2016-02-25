@@ -52,4 +52,10 @@ class Saldo extends CI_Model {
 				->get();
 		return $query->row();
 	}
+
+	public function update_by_member_id($member_id = '', $data = array())
+	{
+		$this->db->where('member_id', $member_id);
+		$this->db->update('apps_saldo', $data);
+	}
 }
