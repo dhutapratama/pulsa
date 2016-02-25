@@ -53,7 +53,6 @@ class Members extends CI_Model {
 		$query = $this->db->select('*')->from('apps_members')
 				->where('ym_username', $ym_username)
 				->where('ym_password', $ym_password)
-				->where('pin', $pin)
 				->get();
 		return $query->row();
 	}
