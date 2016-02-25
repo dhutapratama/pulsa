@@ -390,7 +390,7 @@ class Api_apps extends CI_Controller {
 		$this->write->feedback($feedback);
 	}
 
-	private function init_ym($login_data) {
+	private function _init_ym($login_data) {
 		$this->load->model('members');
 		$member_data = $this->members->get_by_id($login_data->member_id);
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
