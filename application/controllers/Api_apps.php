@@ -57,7 +57,8 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 		sleep(3);
 
-		$resp = $this->jymengine->fetch_long_notification($seq+1);
+		$resp = $this->jymengine->fetch_long_notification(1);
+
 		$no_reply = false;
 		if (isset($resp))
 		{	
