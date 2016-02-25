@@ -152,7 +152,7 @@ class Api_apps extends CI_Controller {
 			$resp = $this->jymengine->fetch_long_notification($seq);
 			if ($resp === false) 
 			{		
-				if ($engine->get_error() != -10)
+				if ($this->jymengine->get_error() != -10)
 				{
 					$this->jymengine->fetch_access_token();				
 					$this->jymengine->signon("AyoIsiPulsa");
