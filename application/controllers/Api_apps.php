@@ -536,4 +536,128 @@ class Api_apps extends CI_Controller {
 
 		$this->write->feedback($feedback);
 	}
+
+	public function create_tiket() {
+		$login_data	= $this->auth->login_key();
+
+		$this->load->library('jymengine');
+		$this->load->model(array('messages', 'login_sessions', 'members'));
+
+		$this->_init_ym($login_data);
+
+		$member_data = $this->members->get_by_id($login_data->member_id);
+		$param = array('tiket' => 'required');
+		$input = $this->auth->input($param);
+
+		$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
+		sleep(3);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
+			sleep(3);
+
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Server tidak merespon, mungkin dia sedang keluar");
+			}
+		}
+
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							$this->load->model(array('messages'));
+							$message['member_id']	= $login_data->member_id;
+							$message['message']		= $val['msg'];
+							$message['date']		= date('Y-m-d H:i:s');
+							$message['is_read']		= 1;
+							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'A/N') !== false){
+								$olapp = $val['msg'];
+							}
+
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
+		$feedback['error'] 				= false;
+		$feedback['data']['tiket']		= $tiket;
+
+		$this->write->feedback($feedback);
+	}
+
+	public function create_komplain() {
+		$login_data	= $this->auth->login_key();
+
+		$this->load->library('jymengine');
+		$this->load->model(array('messages', 'login_sessions', 'members'));
+
+		$this->_init_ym($login_data);
+
+		$member_data = $this->members->get_by_id($login_data->member_id);
+		$param = array('info' => 'required');
+		$input = $this->auth->input($param);
+
+		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].'.'.$member_data->pin));
+		sleep(3);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].'.'.$member_data->pin));
+			sleep(3);
+
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Server tidak merespon, mungkin dia sedang keluar");
+			}
+		}
+
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							$this->load->model(array('messages'));
+							$message['member_id']	= $login_data->member_id;
+							$message['message']		= $val['msg'];
+							$message['date']		= date('Y-m-d H:i:s');
+							$message['is_read']		= 1;
+							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'Komplain') !== false){
+								$komplain = $val['msg'];
+							}
+
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
+		$feedback['error'] 				= false;
+		$feedback['data']['komplain']	= $komplain;
+
+		$this->write->feedback($feedback);
+	}
 }
