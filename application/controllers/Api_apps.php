@@ -162,28 +162,21 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') !== false){
 								// PIN SALAH
 							} else {
-								if ($is_member) {
-									// Update
-									$member['pin'] = $input['pin'];
-									$this->members->update($login_data->member_id, $member);
-									$login_data = $this->members->get_by_id($login_data->member_id);
+								$this->load->model(array('messages'));
+								$message['member_id']	= $login_data->member_id;
+								$message['message']		= $val['msg'];
+								$message['date']		= date('Y-m-d H:i:s');
+								$message['is_read']		= 1;
+								$this->messages->insert($message);
 
-									$this->load->model(array('messages'));
-									$message['member_id']	= $login_data->member_id;
-									$message['message']		= $val['msg'];
-									$message['date']		= date('Y-m-d H:i:s');
-									$message['is_read']		= 1;
-									$this->messages->insert($message);
+								$arr_message = explode(",", $val['msg']);
+								$arr_message = explode("Rp.", $arr_message[0]);
+								$saldo = str_replace(".", "", $arr_message[1]);
+								$saldo = str_replace(",", "", $saldo);
 
-									$arr_message = explode(",", $val['msg']);
-									$arr_message = explode("Rp.", $arr_message[0]);
-									$saldo = str_replace(".", "", $arr_message[1]);
-									$saldo = str_replace(",", "", $saldo);
-
-									$saldo_update['amount']			= $saldo;
-									$saldo_update['last_update']	= date('Y-m-d H:i:s');
-									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
-								}
+								$saldo_update['amount']			= $saldo;
+								$saldo_update['last_update']	= date('Y-m-d H:i:s');
+								$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
 							}
 						}
 					}
