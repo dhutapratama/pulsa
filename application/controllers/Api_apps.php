@@ -171,6 +171,7 @@ class Api_apps extends CI_Controller {
 
 								$arr_message = explode(",", $val['msg']);
 								$arr_message = explode("Rp.", $arr_message[0]);
+								print_r($arr_message);
 								$saldo = str_replace(".", "", $arr_message[1]);
 								$saldo = str_replace(",", "", $saldo);
 
