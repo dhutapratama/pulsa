@@ -408,7 +408,7 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 	}
 
-	public function get_messages() {
+	public function get_pesan() {
 		$this->load->model(array('messages'));
 		$login_data	= $this->auth->login_key();
 
