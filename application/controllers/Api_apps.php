@@ -57,7 +57,18 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 		sleep(3);
 
-		$resp = $this->jymengine->fetch_long_notification(1);
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
+			sleep(3);
+
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+			}
+		}
 
 		$no_reply = false;
 		if (isset($resp))
@@ -342,29 +353,77 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $member_data->ym_username, $member_data->ym_password);
 		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
+		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
+		sleep(3);
 
-		$randomizer = rand(0,2);
-		$status[0] = "Pending";
-		$status[1] = "Sukses";
-		$status[2] = "Gagal";
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+			}
+		}
+
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							$this->load->model(array('messages'));
+							$message['member_id']	= $login_data->member_id;
+							$message['message']		= $val['msg'];
+							$message['date']		= date('Y-m-d H:i:s');
+							$message['is_read']		= 1;
+							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'tdk kami proses') !== false){
+								$status = "Gagal";
+							} else {
+								$status = "Sukses";
+							}
+
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
 		$saldo_data = $this->saldo->get_by_id($login_data->saldo_id);
+		if (!isset($status)) {
+			$status = "Gagal";
+		}
+
+		if ($status == "Sukses") {
+			$sisa_saldo = $saldo_data->amount - $products_data->harga;
+		} else {
+			$sisa_saldo = $saldo_data->amount;
+		}
+		
 
 		//$transaction['transaction_id']		= md5(time().rand(1000, 9999));
 		$transaction['member_id']			= $login_data->member_id;
 		$transaction['transaction_type_id']	= 2;
-		$transaction['status']				= 'Terkirim';
+		$transaction['status']				= $status;
 		$transaction['amount']				= $products_data->harga;
 		$transaction['date']				= date("Y-m-d H:i:s");
-		$transaction['balance']				= $saldo_data->amount;
+		$transaction['balance']				= $sisa_saldo;
 		$transaction['nomor_hp']			= $input['nomor'];
 		$transaction['operator_id']			= $operators_data->operator_id;
 		$transaction['product_id']			= $products_data->product_id;
 		$this->transactions->insert($transaction);
 
-		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
 
 		$feedback['error'] 					= false;
-		$feedback['data']['message']		= "Transaksi anda telah diproses";
+		$feedback['data']['message']		= "Transaksi pembelian anda ".$status;
 		$feedback['data']['refference']		= "TRX : ".md5(time());
 
 		$this->write->feedback($feedback);
