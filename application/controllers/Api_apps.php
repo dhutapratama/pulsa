@@ -57,13 +57,13 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 		sleep(3);
 
-		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+		$resp = $this->jymengine->fetch_long_notification(1);
 
 		if (!$resp) {
 			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
 			sleep(3);
 
-			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+			$resp = $this->jymengine->fetch_long_notification(1);
 
 			if (!$resp) {
 				$this->write->error("Sesi anda berakhir, Mohon login kembali");
