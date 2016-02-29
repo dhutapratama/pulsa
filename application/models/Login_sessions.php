@@ -6,7 +6,9 @@ $login_session['login_key']
 $login_session['date']
 $login_session['member_id']
 $login_session['saldo_id']
-$login_session['device_id']
+$login_session['oauth_token']
+$login_session['oauth_session']
+$login_session['ym_sequence']
 */
 
 class Login_sessions extends CI_Model {

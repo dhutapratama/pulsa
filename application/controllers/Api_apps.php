@@ -5,6 +5,7 @@ class Api_apps extends CI_Controller {
 
 	private $consumer_key 	= 'dj0yJmk9VXpraU05Tko3NGNpJmQ9WVdrOWVUaE5Tbmw0TTJNbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmeD1kNg--';
 	private $secret_key 	= '13b7d68db3f35f230363fdc9ae14d6aad5d3db5a';
+	//private $ym_center		= 'one.pulsa';
 	private $ym_center		= 'misterh2h';
 
 	public function __construct() {
@@ -22,11 +23,7 @@ class Api_apps extends CI_Controller {
 		$this->load->model(array('members', 'saldo'));
 		$member_data = $this->members->get_by_ym_username($input['ym_username']);
 		if ($member_data) {
-			$login_data = $this->members->get_by_ym_login($input['ym_username'], $input['ym_password']);
-			if (!$login_data) {
-				$this->write->error("Password anda salah");
-			}
-			$this->_cek_id_ym(true, $login_data);
+			$this->_cek_id_ym(true, $member_data);
 		} else {
 			$this->_cek_id_ym(false);
 		}
@@ -40,7 +37,7 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
 
 		if (!$this->jymengine->fetch_request_token()) {
-			$this->write->error("Akun YM anda terkunci, Mohon tunggu 1x24 Jam");
+			$this->write->error("Password Anda Salah / YM Terkunci");
 		}
 		if (!$this->jymengine->fetch_access_token()) {
 			$this->write->error("Server error silahkan coba beberapa saat lagi");
@@ -55,22 +52,14 @@ class Api_apps extends CI_Controller {
 
 		// Kirim Cek Saldo
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
-		sleep(3);
 
 		$resp = $this->jymengine->fetch_long_notification(1);
 
 		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
-			sleep(3);
-
-			$resp = $this->jymengine->fetch_long_notification(1);
-
-			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
-			}
+			$this->write->error("Anda tidak terdaftar di server");
 		}
 
-		$no_reply = false;
+		$no_reply = true;
 		if (isset($resp))
 		{	
 			foreach ($resp as $row)
@@ -83,6 +72,10 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') !== false){
 								$this->write->error("PIN Anda Salah");
 							} else {
+								if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+									$this->write->error("Account anda diblokir, Hub CS.");
+								}
+
 								if ($is_member) {
 									// Update
 									$member['pin'] = $input['pin'];
@@ -95,14 +88,37 @@ class Api_apps extends CI_Controller {
 									$message['date']		= date('Y-m-d H:i:s');
 									$message['is_read']		= 1;
 									$this->messages->insert($message);
+
+									if (stripos($val['msg'], 'DIBAYAR') !== false){
+										$arr_message = explode("Rp.", $val['msg']);
+										$arr_message = explode(",", $arr_message[1]);
+
+										$saldos = str_replace(".", "", $arr_message[0]);
+										$saldos = str_replace(",", "", $saldos);
+										$jenis_saldo = "hutang";
+									} else if (stripos($val['msg'], 'Debet:') !== false){
+										$arr_message = explode(",", $val['msg']);
+										$arr_message = explode("Rp.", $arr_message[0]);
+										$saldos = str_replace(".", "", $arr_message[1]);
+										$saldos = str_replace(",", "", $saldos);
+										$jenis_saldo = "saldo";
+									}
+
+									if ($jenis_saldo) {
+										$saldo_update['amount']			= $jumlah_saldo;
+										$saldo_update['jenis_saldo']	= $jenis_saldo;
+										$saldo_update['last_update']	= date('Y-m-d H:i:s');
+										$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
+									}
+									$login_session['ym_sequence']	= $val['sequence']; 
+									$this->login_sessions->update($login_data->login_session_id, $login_session);
 								}
 							}
 						}
+						$no_reply = false;
 					}
 				}
 			}
-		} else {
-			$no_reply = true;
 		}
 
 		if ($no_reply) {
@@ -120,8 +136,9 @@ class Api_apps extends CI_Controller {
 			$member_id = $this->db->insert_id();
 
 			$saldo['member_id']		= $member_id;
-			$saldo['amount']		= 0;
+			$saldo['amount']		= $jumlah_saldo;
 			$saldo['last_update']	= date("Y-m-d H:i:s");
+			$saldo['jenis_saldo']	= $jenis_saldo;
 			$this->saldo->insert($saldo);
 			$saldo_id = $this->db->insert_id();
 		} else {
@@ -144,72 +161,6 @@ class Api_apps extends CI_Controller {
 		$this->load->model(array('members', 'saldo', 'transactions', 'transaction_types', 'operators', 'products', 'messages', 'login_sessions'));
 		$login_data			= $this->auth->login_key();
 		$member_data		= $this->members->get_by_id($login_data->member_id);
-
-		$this->_init_ym($login_data);
-		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
-		sleep(3);
-		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
-
-		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
-			sleep(3);
-
-			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
-
-			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
-			}
-		}
-
-								
-		if (isset($resp))
-		{	
-			$jenis_saldo = false;
-			foreach ($resp as $row)
-			{
-				foreach ($row as $key => $val)
-				{
-					if ($key == 'message') //incoming message
-					{
-						if ($val['sender'] == $this->ym_center) {
-							if (stripos($val['msg'], 'PIN') !== false){
-								$this->write->error("PIN anda Salah!");
-							} else {
-								$this->load->model(array('messages'));
-								$message['member_id']	= $login_data->member_id;
-								$message['message']		= $val['msg'];
-								$message['date']		= date('Y-m-d H:i:s');
-								$message['is_read']		= 1;
-								$this->messages->insert($message);
-
-								if (stripos($val['msg'], 'DIBAYAR') !== false){
-									$arr_message = explode("Rp.", $val['msg']);
-									$arr_message = explode(",", $arr_message[1]);
-
-									$saldo = str_replace(".", "", $arr_message[0]);
-									$saldo = str_replace(",", "", $saldo);
-									$jenis_saldo = "hutang";
-								} else if (stripos($val['msg'], 'Debet:') !== false){
-									$arr_message = explode(",", $val['msg']);
-									$arr_message = explode("Rp.", $arr_message[0]);
-									$saldo = str_replace(".", "", $arr_message[1]);
-									$saldo = str_replace(",", "", $saldo);
-									$jenis_saldo = "saldo";
-								}
-
-								if ($jenis_saldo) {
-									$saldo_update['amount']			= $saldo;
-									$saldo_update['last_update']	= date('Y-m-d H:i:s');
-									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
-								}
-								$login_session['ym_sequence']	= $val['sequence']; 
-								$this->login_sessions->update($login_data->login_session_id, $login_session);
-							}
-						}
-					}
-				}
-			}
-		}
 
 		$saldo_data			= $this->saldo->get_by_id($login_data->saldo_id);
 		$transaction_data	= $this->transactions->get_by_member_id($login_data->member_id);
@@ -237,7 +188,7 @@ class Api_apps extends CI_Controller {
 		}
 
 		$feedback['error'] 						= false;
-		$feedback['data']['jenis_saldo'] 		= $jenis_saldo;
+		$feedback['data']['jenis_saldo'] 		= $saldo_data->jenis_saldo;
 		$feedback['data']['saldo']				= "Rp ".number_format($saldo_data->amount, 0, '', '.');
 		$feedback['data']['nama'] 				= $member_data->name;
 		$feedback['data']['transactions_data'] 	= $transactions ? true : false;
@@ -354,7 +305,7 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
-		sleep(3);
+		
 
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
@@ -391,6 +342,75 @@ class Api_apps extends CI_Controller {
 
 							$login_session['ym_sequence']	= $val['sequence']; 
 							$this->login_sessions->update($login_data->login_session_id, $login_session);
+						}
+					}
+				}
+			}
+		}
+
+		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
+		
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
+
+		if (!$resp) {
+			// Re login w
+			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
+			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
+
+			if (!$resp) {
+				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+			}
+		}
+
+								
+		if (isset($resp))
+		{	
+			$jenis_saldo = false;
+			foreach ($resp as $row)
+			{
+				foreach ($row as $key => $val)
+				{
+					if ($key == 'message') //incoming message
+					{
+						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+								$this->write->error("Account anda diblokir, Hub CS.");
+							}
+
+							if (stripos($val['msg'], 'PIN') !== false){
+								$this->write->error("PIN anda Salah!");
+							} else {
+								$this->load->model(array('messages'));
+								$message['member_id']	= $login_data->member_id;
+								$message['message']		= $val['msg'];
+								$message['date']		= date('Y-m-d H:i:s');
+								$message['is_read']		= 1;
+								$this->messages->insert($message);
+
+								if (stripos($val['msg'], 'DIBAYAR') !== false){
+									$arr_message = explode("Rp.", $val['msg']);
+									$arr_message = explode(",", $arr_message[1]);
+
+									$saldo = str_replace(".", "", $arr_message[0]);
+									$saldo = str_replace(",", "", $saldo);
+									$jenis_saldo = "hutang";
+								} else if (stripos($val['msg'], 'Debet:') !== false){
+									$arr_message = explode(",", $val['msg']);
+									$arr_message = explode("Rp.", $arr_message[0]);
+									$saldo = str_replace(".", "", $arr_message[1]);
+									$saldo = str_replace(",", "", $saldo);
+									$jenis_saldo = "saldo";
+								}
+
+								if ($jenis_saldo) {
+									$saldo_update['amount']			= $saldo;
+									$saldo_update['jenis_saldo']	= $jenis_saldo;
+									$saldo_update['last_update']	= date('Y-m-d H:i:s');
+									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
+								}
+								$login_session['ym_sequence']	= $val['sequence']; 
+								$this->login_sessions->update($login_data->login_session_id, $login_session);
+							}
 						}
 					}
 				}
@@ -501,19 +521,10 @@ class Api_apps extends CI_Controller {
 		$this->_init_ym($login_data);
 
 		$this->jymengine->send_message($this->ym_center, json_encode('OLAPP'));
-		sleep(3);
+		$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
+		$olapp = "-";
+		$olap2 = "-";
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
-
-		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('OLAPP'));
-			sleep(3);
-
-			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
-
-			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
-			}
-		}
 
 		if (isset($resp))
 		{	
@@ -525,6 +536,10 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+								$this->write->error("Account anda diblokir, Hub CS.");
+							}
+
 							$this->load->model(array('messages'));
 							$message['member_id']	= $login_data->member_id;
 							$message['message']		= $val['msg'];
@@ -535,47 +550,6 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'OL:') !== false){
 								$olapp = str_replace("OL:", "", $val['msg']);
 							}
-
-							$login_session['ym_sequence']	= $val['sequence']; 
-							$this->login_sessions->update($login_data->login_session_id, $login_session);
-						}
-					}
-				}
-			}
-		}
-
-		// OLAP2
-		$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
-		sleep(3);
-		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
-
-		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
-			sleep(3);
-
-			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
-
-			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
-			}
-		}
-					
-		if (isset($resp))
-		{	
-			$jenis_saldo = false;
-			foreach ($resp as $row)
-			{
-				foreach ($row as $key => $val)
-				{
-					if ($key == 'message') //incoming message
-					{
-						if ($val['sender'] == $this->ym_center) {
-							$this->load->model(array('messages'));
-							$message['member_id']	= $login_data->member_id;
-							$message['message']		= $val['msg'];
-							$message['date']		= date('Y-m-d H:i:s');
-							$message['is_read']		= 1;
-							$this->messages->insert($message);
 
 							if (stripos($val['msg'], 'OP:') !== false){
 								$olap2 = str_replace("OP:", "", $val['msg']);
@@ -609,13 +583,11 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
-		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
 			$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
-			sleep(3);
-
+			
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
@@ -633,6 +605,10 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+								$this->write->error("Account anda diblokir, Hub CS.");
+							}
+
 							$this->load->model(array('messages'));
 							$message['member_id']	= $login_data->member_id;
 							$message['message']		= $val['msg'];
@@ -670,20 +646,8 @@ class Api_apps extends CI_Controller {
 		$param = array('info' => 'required');
 		$input = $this->auth->input($param);
 
-		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
-		sleep(3);
-		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
-
-		if (!$resp) {
-			$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
-			sleep(3);
-
-			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
-
-			if (!$resp) {
-				$this->write->error("Server tidak merespon, mungkin dia sedang keluar");
-			}
-		}
+		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].".".$member_data->pin));
+		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 		if (isset($resp))
 		{	
@@ -695,12 +659,20 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+								$this->write->error("Account anda diblokir, Hub CS.");
+							}
+							
 							$this->load->model(array('messages'));
 							$message['member_id']	= $login_data->member_id;
 							$message['message']		= $val['msg'];
 							$message['date']		= date('Y-m-d H:i:s');
 							$message['is_read']		= 1;
 							$this->messages->insert($message);
+
+							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
+								$this->write->error("Account anda diblokir, Hub CS.");
+							}
 
 							if (stripos($val['msg'], 'Komplain') !== false){
 								$komplain = $val['msg'];

@@ -5,6 +5,7 @@ $saldo['saldo_id']
 $saldo['member_id']
 $saldo['amount']
 $saldo['last_update']
+$saldo['jenis_saldo']
 */
 
 class Saldo extends CI_Model {
