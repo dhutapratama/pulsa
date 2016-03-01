@@ -52,10 +52,13 @@ class Api_apps extends CI_Controller {
 
 		// Kirim Cek Saldo
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
-
+		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification(1);
 
 		if (!$resp) {
+			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$input['pin']));
+			sleep(3);
+			$resp = $this->jymengine->fetch_long_notification(1);
 			$this->write->error("Anda tidak terdaftar. Baca Panduan Pendaftaran.");
 		}
 
@@ -69,6 +72,7 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
+							$no_reply = false;
 							if (stripos($val['msg'], 'PIN yang Anda masukkan salah') !== false){
 								$this->write->error("PIN Anda Salah");
 							} else {
@@ -106,7 +110,6 @@ class Api_apps extends CI_Controller {
 								}
 							}
 						}
-						$no_reply = false;
 					}
 				}
 			}
@@ -144,7 +147,7 @@ class Api_apps extends CI_Controller {
 				$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
 			}
 		}
-		$this->auth->add_login_session($member_id, $saldo_id, serialize($token_data), serialize($signon_data));
+		$this->auth->add_login_session($member_id, $saldo_id, serialize($token_data), serialize($signon_data), $val['sequence']);
     }
 
 	public function check_login_key() {
@@ -303,7 +306,7 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->set_signon(unserialize($login_data->oauth_session));
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
-		
+		sleep(3);
 
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
@@ -338,21 +341,23 @@ class Api_apps extends CI_Controller {
 								$status = "Sukses";
 							}
 
-							$login_session['ym_sequence']	= $val['sequence']; 
-							$this->login_sessions->update($login_data->login_session_id, $login_session);
+							
 						}
+						$login_session['ym_sequence']	= $val['sequence']; 
+						$this->login_sessions->update($login_data->login_session_id, $login_session);
 					}
 				}
 			}
 		}
 
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
-		
+		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
 			// Re login w
 			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
+			sleep(3);
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
@@ -406,9 +411,9 @@ class Api_apps extends CI_Controller {
 									$saldo_update['last_update']	= date('Y-m-d H:i:s');
 									$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
 								}
-								$login_session['ym_sequence']	= $val['sequence']; 
-								$this->login_sessions->update($login_data->login_session_id, $login_session);
 							}
+							$login_session['ym_sequence']	= $val['sequence']; 
+							$this->login_sessions->update($login_data->login_session_id, $login_session);
 						}
 					}
 				}
@@ -520,6 +525,7 @@ class Api_apps extends CI_Controller {
 
 		$this->jymengine->send_message($this->ym_center, json_encode('OLAPP'));
 		$this->jymengine->send_message($this->ym_center, json_encode('OLAP2'));
+		sleep(3);
 		$olapp = "-";
 		$olap2 = "-";
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
@@ -552,10 +558,10 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'OP:') !== false){
 								$olap2 = str_replace("OP:", "", $val['msg']);
 							}
-
-							$login_session['ym_sequence']	= $val['sequence']; 
-							$this->login_sessions->update($login_data->login_session_id, $login_session);
 						}
+
+						$login_session['ym_sequence']	= $val['sequence']; 
+						$this->login_sessions->update($login_data->login_session_id, $login_session);
 					}
 				}
 			}
@@ -581,11 +587,12 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
+		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
 			$this->jymengine->send_message($this->ym_center, json_encode('TIKET.'.$input['tiket'].'.'.$member_data->pin));
-			
+			sleep(3);
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
@@ -617,10 +624,9 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'A/N') !== false){
 								$tiket = $val['msg'];
 							}
-
-							$login_session['ym_sequence']	= $val['sequence']; 
-							$this->login_sessions->update($login_data->login_session_id, $login_session);
 						}
+						$login_session['ym_sequence']	= $val['sequence']; 
+						$this->login_sessions->update($login_data->login_session_id, $login_session);
 					}
 				}
 			}
@@ -645,6 +651,7 @@ class Api_apps extends CI_Controller {
 		$input = $this->auth->input($param);
 
 		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
+		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 		if (isset($resp))
@@ -675,10 +682,9 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'Komplain') !== false){
 								$komplain = $val['msg'];
 							}
-
-							$login_session['ym_sequence']	= $val['sequence']; 
-							$this->login_sessions->update($login_data->login_session_id, $login_session);
 						}
+						$login_session['ym_sequence']	= $val['sequence'];
+						$this->login_sessions->update($login_data->login_session_id, $login_session);
 					}
 				}
 			}

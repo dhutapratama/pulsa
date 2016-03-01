@@ -18,7 +18,7 @@ class Auth {
 		return $login_data;
 	}
 
-	function add_login_session($member_id, $saldo_id, $oauth_token, $oauth_session) {
+	function add_login_session($member_id, $saldo_id, $oauth_token, $oauth_session, $ym_sequence) {
 		$CI =& get_instance();
         $CI->load->model('login_sessions');
 		$login_key = md5(time().rand(1000, 9999));
@@ -28,7 +28,7 @@ class Auth {
 		$login_session['saldo_id']	= $saldo_id;
 		$login_session['oauth_token']	= $oauth_token;
 		$login_session['oauth_session']	= $oauth_session;
-		$login_session['ym_sequence']	= 1;
+		$login_session['ym_sequence']	= $ym_sequence;
 		$CI->login_sessions->insert($login_session);
 
 		$feedback['error'] = false;
