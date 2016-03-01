@@ -56,7 +56,7 @@ class Api_apps extends CI_Controller {
 		$resp = $this->jymengine->fetch_long_notification(1);
 
 		if (!$resp) {
-			$this->write->error("Anda tidak terdaftar di server");
+			$this->write->error("Anda tidak terdaftar. Baca Panduan Pendaftaran.");
 		}
 
 		$no_reply = true;
