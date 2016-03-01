@@ -76,6 +76,21 @@ class Api_apps extends CI_Controller {
 									$this->write->error("Account anda diblokir, Hub CS.");
 								}
 
+								if (stripos($val['msg'], 'DIBAYAR') !== false){
+									$arr_message = explode("Rp.", $val['msg']);
+									$arr_message = explode(",", $arr_message[1]);
+
+									$saldos = str_replace(".", "", $arr_message[0]);
+									$jumlah_saldo = str_replace(",", "", $saldos);
+									$jenis_saldo = "hutang";
+								} else if (stripos($val['msg'], 'Debet:') !== false){
+									$arr_message = explode(",", $val['msg']);
+									$arr_message = explode("Rp.", $arr_message[0]);
+									$saldos = str_replace(".", "", $arr_message[1]);
+									$jumlah_saldo = str_replace(",", "", $saldos);
+									$jenis_saldo = "saldo";
+								}
+
 								if ($is_member) {
 									// Update
 									$member['pin'] = $input['pin'];
@@ -88,30 +103,6 @@ class Api_apps extends CI_Controller {
 									$message['date']		= date('Y-m-d H:i:s');
 									$message['is_read']		= 1;
 									$this->messages->insert($message);
-
-									if (stripos($val['msg'], 'DIBAYAR') !== false){
-										$arr_message = explode("Rp.", $val['msg']);
-										$arr_message = explode(",", $arr_message[1]);
-
-										$saldos = str_replace(".", "", $arr_message[0]);
-										$saldos = str_replace(",", "", $saldos);
-										$jenis_saldo = "hutang";
-									} else if (stripos($val['msg'], 'Debet:') !== false){
-										$arr_message = explode(",", $val['msg']);
-										$arr_message = explode("Rp.", $arr_message[0]);
-										$saldos = str_replace(".", "", $arr_message[1]);
-										$saldos = str_replace(",", "", $saldos);
-										$jenis_saldo = "saldo";
-									}
-
-									if ($jenis_saldo) {
-										$saldo_update['amount']			= $jumlah_saldo;
-										$saldo_update['jenis_saldo']	= $jenis_saldo;
-										$saldo_update['last_update']	= date('Y-m-d H:i:s');
-										$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
-									}
-									$login_session['ym_sequence']	= $val['sequence']; 
-									$this->login_sessions->update($login_data->login_session_id, $login_session);
 								}
 							}
 						}
@@ -145,6 +136,13 @@ class Api_apps extends CI_Controller {
 			$member_id = $login_data->member_id;
 			$saldo_data = $this->saldo->get_by_member_id($member_id);
 			$saldo_id = $saldo_data->saldo_id;
+
+			if ($jenis_saldo) {
+				$saldo_update['amount']			= $jumlah_saldo;
+				$saldo_update['jenis_saldo']	= $jenis_saldo;
+				$saldo_update['last_update']	= date('Y-m-d H:i:s');
+				$this->saldo->update_by_member_id($login_data->member_id, $saldo_update);
+			}
 		}
 		$this->auth->add_login_session($member_id, $saldo_id, serialize($token_data), serialize($signon_data));
     }
@@ -646,7 +644,7 @@ class Api_apps extends CI_Controller {
 		$param = array('info' => 'required');
 		$input = $this->auth->input($param);
 
-		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info'].".".$member_data->pin));
+		$this->jymengine->send_message($this->ym_center, json_encode('INFO.'.$input['info']));
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 		if (isset($resp))
