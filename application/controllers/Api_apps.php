@@ -314,7 +314,7 @@ class Api_apps extends CI_Controller {
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+				$this->write->error("Server Delay / Sesi berakhir");
 			}
 		}
 
