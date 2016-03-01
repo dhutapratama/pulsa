@@ -307,10 +307,10 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->set_token(unserialize($login_data->oauth_token));
 		$this->jymengine->send_message($this->ym_center, json_encode($input['kode_sms'].'.'.$input['nomor'].'.'.$member_data->pin));
 		sleep(3);
-
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
+			sleep(2);
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
