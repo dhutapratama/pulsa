@@ -87,7 +87,7 @@
                                         <span class=" fa fa-angle-down"></span>
                                     </a>
                                     <ul class="dropdown-menu dropdown-usermenu animated fadeInDown pull-right">
-                                        <li><a href="login.html"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
+                                        <li><a href="<?php echo site_url("admin/logout"); ?>"><i class="fa fa-sign-out pull-right"></i> Log Out</a>
                                         </li>
                                     </ul>
                                 </li>

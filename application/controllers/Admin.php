@@ -125,4 +125,9 @@ class Admin extends CI_Controller {
 			$this->load->view('web/login');
 		}
 	}
+
+	public function logout() {
+		$this->session->unset_userdata('login_key');
+		redirect('admin/login');
+	}
 }
