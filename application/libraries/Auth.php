@@ -42,6 +42,7 @@ class Auth {
 		$login_session['date']		= date('Y-m-d H:i:s');
 		$login_session['oauth_token']	= $oauth_token;
 		$login_session['oauth_session']	= $oauth_session;
+		$login_session['ym_sequence']	= 1;
 		$CI->login_sessions->update($login_session_id, $login_session);
 	}
 

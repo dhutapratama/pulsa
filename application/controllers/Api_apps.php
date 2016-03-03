@@ -152,10 +152,10 @@ class Api_apps extends CI_Controller {
 		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $members_data->ym_username, $members_data->ym_password);
 
 		if (!$this->jymengine->fetch_request_token()) {
-			$this->write->error("Password Anda Salah / YM Terkunci");
+			$this->write->error("YM Terkunci");
 		}
 		if (!$this->jymengine->fetch_access_token()) {
-			$this->write->error("Server error silahkan coba beberapa saat lagi");
+			$this->write->error("Silahkan coba beberapa saat lagi");
 		}
 		if (!$this->jymengine->signon('AyoIsiPulsa')) {
 			$this->write->error("Tidak dapat masuk");
