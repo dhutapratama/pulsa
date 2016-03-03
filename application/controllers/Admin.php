@@ -15,7 +15,7 @@ class Admin extends CI_Controller {
 			redirect('admin');
 		}
 
-		if ($this->uri->segment(2) == "") {
+		if ($this->uri->segment(1) == "") {
 			redirect('admin');
 		}
 
