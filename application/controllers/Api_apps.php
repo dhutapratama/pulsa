@@ -100,13 +100,6 @@ class Api_apps extends CI_Controller {
 									$member['pin'] = $input['pin'];
 									$this->members->update($login_data->member_id, $member);
 									$login_data = $this->members->get_by_id($login_data->member_id);
-
-									$this->load->model(array('messages'));
-									$message['member_id']	= $login_data->member_id;
-									$message['message']		= $val['msg'];
-									$message['date']		= date('Y-m-d H:i:s');
-									$message['is_read']		= 1;
-									$this->messages->insert($message);
 								}
 							}
 						}
@@ -152,7 +145,27 @@ class Api_apps extends CI_Controller {
 
 	public function check_login_key() {
 		$this->load->model(array('login_sessions'));
-		$this->auth->login_key();
+		$login_data	= $this->auth->login_key();
+
+		$this->load->library('jymengine');
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
+
+		if (!$this->jymengine->fetch_request_token()) {
+			$this->write->error("Password Anda Salah / YM Terkunci");
+		}
+		if (!$this->jymengine->fetch_access_token()) {
+			$this->write->error("Server error silahkan coba beberapa saat lagi");
+		}
+		if (!$this->jymengine->signon('AyoIsiPulsa')) {
+			$this->write->error("Tidak dapat masuk");
+		}
+		
+		// Berhasil masuk
+		$signon_data = $this->jymengine->get_signon();
+		$token_data = $this->jymengine->get_token();
+
+		$this->auth->update_login_session($login_data->login_session_id, $token_data, $signon_data);
+
 		$feedback['error'] = false;
 		$this->write->feedback($feedback);
 	}
@@ -383,13 +396,6 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'PIN') !== false){
 								$this->write->error("PIN anda Salah!");
 							} else {
-								$this->load->model(array('messages'));
-								$message['member_id']	= $login_data->member_id;
-								$message['message']		= $val['msg'];
-								$message['date']		= date('Y-m-d H:i:s');
-								$message['is_read']		= 1;
-								$this->messages->insert($message);
-
 								if (stripos($val['msg'], 'DIBAYAR') !== false){
 									$arr_message = explode("Rp.", $val['msg']);
 									$arr_message = explode(",", $arr_message[1]);
@@ -544,13 +550,6 @@ class Api_apps extends CI_Controller {
 								$this->write->error("Account anda diblokir, Hub CS.");
 							}
 
-							$this->load->model(array('messages'));
-							$message['member_id']	= $login_data->member_id;
-							$message['message']		= $val['msg'];
-							$message['date']		= date('Y-m-d H:i:s');
-							$message['is_read']		= 1;
-							$this->messages->insert($message);
-
 							if (stripos($val['msg'], 'OL:') !== false){
 								$olapp = str_replace("OL:", "", $val['msg']);
 							}
@@ -613,14 +612,6 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
 								$this->write->error("Account anda diblokir, Hub CS.");
 							}
-
-							$this->load->model(array('messages'));
-							$message['member_id']	= $login_data->member_id;
-							$message['message']		= $val['msg'];
-							$message['date']		= date('Y-m-d H:i:s');
-							$message['is_read']		= 1;
-							$this->messages->insert($message);
-
 							if (stripos($val['msg'], 'A/N') !== false){
 								$tiket = $val['msg'];
 							}
@@ -667,13 +658,6 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
 								$this->write->error("Account anda diblokir, Hub CS.");
 							}
-							
-							$this->load->model(array('messages'));
-							$message['member_id']	= $login_data->member_id;
-							$message['message']		= $val['msg'];
-							$message['date']		= date('Y-m-d H:i:s');
-							$message['is_read']		= 1;
-							$this->messages->insert($message);
 
 							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
 								$this->write->error("Account anda diblokir, Hub CS.");
