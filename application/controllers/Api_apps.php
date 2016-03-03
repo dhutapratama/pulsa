@@ -144,11 +144,12 @@ class Api_apps extends CI_Controller {
     }
 
 	public function check_login_key() {
-		$this->load->model(array('login_sessions'));
+		$this->load->model(array('login_sessions', 'members'));
 		$login_data	= $this->auth->login_key();
 
 		$this->load->library('jymengine');
-		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $input['ym_username'], $input['ym_password']);
+		$members_data = $this->members->get_by_id($login_data->member_id);
+		$this->jymengine->initialize($this->consumer_key, $this->secret_key, $members_data->ym_username, $members_data->ym_password);
 
 		if (!$this->jymengine->fetch_request_token()) {
 			$this->write->error("Password Anda Salah / YM Terkunci");
