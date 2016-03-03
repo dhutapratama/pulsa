@@ -29,10 +29,10 @@ if ($_SERVER['HTTP_HOST'] == 'ayoisipulsa.app'| $_SERVER['HTTP_HOST'] == 'www.ay
 } else {
 	$db['default'] = array(
 		'dsn'	=> '',
-		'hostname' => 'localhost',
-		'username' => 'z',
-		'password' => 'z',
-		'database' => 'zadmin_ayoisipulsa',
+		'hostname' => 'mysql.idhostinger.com',
+		'username' => 'u299730204_pulsa',
+		'password' => '48624862',
+		'database' => 'u299730204_pulsa',
 		'dbdriver' => 'mysqli',
 		'dbprefix' => '',
 		'pconnect' => FALSE,
