@@ -1,11 +1,11 @@
 <?php
 	
-if ($_SERVER['HTTP_HOST'] == 'ayoisipulsa.app') {
+if ($_SERVER['HTTP_HOST'] == 'ayoisipulsa.app' || $_SERVER['HTTP_HOST'] == 'www.ayoisipulsa.app') {
 	$environment		= 'development';
 	$system_path 		= 'system';
 	$application_folder = 'application';
 	$view_folder 		= '';
-} elseif ($_SERVER['HTTP_HOST'] == 'pulsa.hol.es') {
+} elseif ($_SERVER['HTTP_HOST'] == 'pulsa.hol.es' || $_SERVER['HTTP_HOST'] == 'www.pulsa.hol.es') {
 	$environment		= 'production';
 	$system_path 		= 'system';
 	$application_folder = 'application';
