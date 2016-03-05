@@ -352,7 +352,7 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'tdk kami proses') !== false || stripos($val['msg'], 'GAGAL') !== false){
 								$status = "Gagal";
 								$trx_message = $val['msg'];
-							} elseif (stripos($val['msg'], 'SUKSES') !== false){
+							} elseif (stripos($val['msg'], 'akan segera' || stripos($val['msg'], 'SUKSES') !== false){
 								$status = "Sukses";
 								$trx_message = $val['msg'];
 							}
@@ -391,6 +391,19 @@ class Api_apps extends CI_Controller {
 					if ($key == 'message') //incoming message
 					{
 						if ($val['sender'] == $this->ym_center) {
+							if (stripos($val['msg'], 'tdk kami proses') !== false 
+								|| stripos($val['msg'], 'GAGAL') !== false
+								|| stripos($val['msg'], 'akan segera' 
+								|| stripos($val['msg'], 'SUKSES'){
+								$this->load->model(array('messages'));
+								$message['member_id']	= $login_data->member_id;
+								$message['message']		= $val['msg'];
+								$message['date']		= date('Y-m-d H:i:s');
+								$message['is_read']		= 1;
+								$this->messages->insert($message);
+							}
+							
+
 							if (stripos($val['msg'], 'Account Anda tidak aktif') !== false){
 								$this->write->error("Account anda diblokir, Hub CS.");
 							}
