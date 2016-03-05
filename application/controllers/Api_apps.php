@@ -349,12 +349,12 @@ class Api_apps extends CI_Controller {
 							$message['is_read']		= 1;
 							$this->messages->insert($message);
 
-							if (stripos($val['msg'], 'tdk kami proses') === TRUE || stripos($val['msg'], 'GAGAL') === TRUE){
+							if (stripos($val['msg'], 'tdk kami proses') !== false || stripos($val['msg'], 'GAGAL') !== false){
 								$status = "Gagal";
-								$feedback_message = $val['msg'];
-							} elseif (stripos($val['msg'], 'SUKSES') === TRUE){
+								$trx_message = $val['msg'];
+							} elseif (stripos($val['msg'], 'SUKSES') !== false){
 								$status = "Sukses";
-								$feedback_message = $val['msg'];
+								$trx_message = $val['msg'];
 							}
 						}
 						$login_session['ym_sequence']	= $val['sequence']; 
@@ -439,7 +439,6 @@ class Api_apps extends CI_Controller {
 			$sisa_saldo = $saldo_data->amount;
 		}
 		
-
 		//$transaction['transaction_id']		= md5(time().rand(1000, 9999));
 		$transaction['member_id']			= $login_data->member_id;
 		$transaction['transaction_type_id']	= 2;
@@ -452,10 +451,9 @@ class Api_apps extends CI_Controller {
 		$transaction['product_id']			= $products_data->product_id;
 		$this->transactions->insert($transaction);
 
-
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Transaksi pembelian anda ".$status;
-		$feedback['data']['trx_message']	= $feedback_message;
+		$feedback['data']['trx_message']	= $trx_message;
 
 		$this->write->feedback($feedback);
 	}
