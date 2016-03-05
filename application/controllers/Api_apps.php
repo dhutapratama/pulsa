@@ -349,13 +349,13 @@ class Api_apps extends CI_Controller {
 							$message['is_read']		= 1;
 							$this->messages->insert($message);
 
-							if (stripos($val['msg'], 'tdk kami proses') !== false){
+							if (stripos($val['msg'], 'tdk kami proses') === TRUE || stripos($val['msg'], 'GAGAL') === TRUE){
 								$status = "Gagal";
-							} else {
+								$feedback_message = $val['msg'];
+							} elseif (stripos($val['msg'], 'SUKSES') === TRUE){
 								$status = "Sukses";
+								$feedback_message = $val['msg'];
 							}
-
-							
 						}
 						$login_session['ym_sequence']	= $val['sequence']; 
 						$this->login_sessions->update($login_data->login_session_id, $login_session);
@@ -364,6 +364,7 @@ class Api_apps extends CI_Controller {
 			}
 		}
 
+		$login_data	= $this->auth->login_key();
 		$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
 		sleep(3);
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
@@ -375,7 +376,7 @@ class Api_apps extends CI_Controller {
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
-				$this->write->error("Sesi anda berakhir, Mohon login kembali");
+				$this->write->error("Server tidak merespon, Silahkan coba lagi.");
 			}
 		}
 
@@ -454,7 +455,7 @@ class Api_apps extends CI_Controller {
 
 		$feedback['error'] 					= false;
 		$feedback['data']['message']		= "Transaksi pembelian anda ".$status;
-		$feedback['data']['refference']		= "TRX : ".md5(time());
+		$feedback['data']['trx_message']	= $feedback_message;
 
 		$this->write->feedback($feedback);
 	}
