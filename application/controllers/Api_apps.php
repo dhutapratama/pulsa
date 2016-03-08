@@ -352,7 +352,7 @@ class Api_apps extends CI_Controller {
 							if (stripos($val['msg'], 'tdk kami proses') !== false || stripos($val['msg'], 'GAGAL') !== false){
 								$status = "Gagal";
 								$trx_message = $val['msg'];
-							} elseif (stripos($val['msg'], 'akan segera' || stripos($val['msg'], 'SUKSES') !== false){
+							} elseif (stripos($val['msg'], 'akan segera') || stripos($val['msg'], 'SUKSES') !== false){
 								$status = "Sukses";
 								$trx_message = $val['msg'];
 							}
