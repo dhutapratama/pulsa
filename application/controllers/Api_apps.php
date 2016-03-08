@@ -324,7 +324,7 @@ class Api_apps extends CI_Controller {
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
-			sleep(2);
+			sleep(1);
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
@@ -370,9 +370,7 @@ class Api_apps extends CI_Controller {
 		$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence + 1);
 
 		if (!$resp) {
-			// Re login w
-			$this->jymengine->send_message($this->ym_center, json_encode('S.'.$member_data->pin));
-			sleep(3);
+			sleep(1);
 			$resp = $this->jymengine->fetch_long_notification($login_data->ym_sequence);
 
 			if (!$resp) {
