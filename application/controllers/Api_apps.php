@@ -393,7 +393,7 @@ class Api_apps extends CI_Controller {
 						if ($val['sender'] == $this->ym_center) {
 							if (stripos($val['msg'], 'tdk kami proses') !== false 
 								|| stripos($val['msg'], 'GAGAL') !== false
-								|| stripos($val['msg'], 'akan segera' 
+								|| stripos($val['msg'], 'akan segera') 
 								|| stripos($val['msg'], 'SUKSES'){
 								$this->load->model(array('messages'));
 								$message['member_id']	= $login_data->member_id;
