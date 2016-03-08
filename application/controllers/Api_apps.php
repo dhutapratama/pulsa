@@ -349,11 +349,14 @@ class Api_apps extends CI_Controller {
 							$message['is_read']		= 1;
 							$this->messages->insert($message);
 
-							if (stripos($val['msg'], 'tdk kami proses') !== false || stripos($val['msg'], 'GAGAL') !== false){
+							if (stripos($val['msg'], 'tdk kami proses') !== false || stripos($val['msg'], 'GAGAL.') !== false){
 								$status = "Gagal";
 								$trx_message = $val['msg'];
 							} elseif (stripos($val['msg'], 'akan segera') !== false || stripos($val['msg'], 'SUKSES') !== false){
 								$status = "Sukses";
+								$trx_message = $val['msg'];
+							} else {
+								$status = "Validating";
 								$trx_message = $val['msg'];
 							}
 						}
@@ -390,7 +393,7 @@ class Api_apps extends CI_Controller {
 					{
 						if ($val['sender'] == $this->ym_center) {
 							if (stripos($val['msg'], 'tdk kami proses') !== false 
-								|| stripos($val['msg'], 'GAGAL') !== false
+								|| stripos($val['msg'], 'GAGAL.') !== false
 								|| stripos($val['msg'], 'akan segera' !== false) 
 								|| stripos($val['msg'], 'SUKSES') !== false) {
 								$this->load->model(array('messages'));
@@ -399,6 +402,11 @@ class Api_apps extends CI_Controller {
 								$message['date']		= date('Y-m-d H:i:s');
 								$message['is_read']		= 1;
 								$this->messages->insert($message);
+							} else {
+								$message['member_id']	= $login_data->member_id;
+								$message['message']		= $val['msg'].("U");
+								$message['date']		= date('Y-m-d H:i:s');
+								$message['is_read']		= 1;
 							}
 							
 
