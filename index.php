@@ -5,7 +5,8 @@ if ($_SERVER['HTTP_HOST'] == 'ayoisipulsa.app' || $_SERVER['HTTP_HOST'] == 'www.
 	$system_path 		= 'system';
 	$application_folder = 'application';
 	$view_folder 		= '';
-} elseif ($_SERVER['HTTP_HOST'] == 'pulsa.hol.es' || $_SERVER['HTTP_HOST'] == 'www.pulsa.hol.es') {
+} elseif ($_SERVER['HTTP_HOST'] == 'pulsa.hol.es' || $_SERVER['HTTP_HOST'] == 'www.pulsa.hol.es'
+	|| $_SERVER['HTTP_HOST'] == 'pulsa.freevar.com' || $_SERVER['HTTP_HOST'] == 'www.pulsa.freevar.com') {
 	$environment		= 'development';
 	$system_path 		= 'system';
 	$application_folder = 'application';
